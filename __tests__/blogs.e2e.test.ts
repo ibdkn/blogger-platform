@@ -1,12 +1,13 @@
 import {SETTINGS} from "../src/settings";
 import {req} from "./test-helpers";
-import {blogs} from "../src/db/blogs.db";
+import {blogDB} from "../src/db/blogs.db";
+import {ADMIN_AUTH} from "../src/common/middlewares/auth.middleware";
 
 let blogsDB = [];
 describe('GET /blogs', () => {
     // Перед каждым тестом очищаем "базу данных"
     beforeAll(async () => {
-        blogsDB = blogs;
+        blogsDB = blogDB;
     })
 
     it('should return all blogs', async () => {
@@ -25,7 +26,7 @@ describe('GET /blogs', () => {
 describe('GET /blogs/{id}', () => {
     // Перед каждым тестом очищаем "базу данных"
     beforeAll(async () => {
-        blogsDB = blogs;
+        blogsDB = blogDB;
     })
 
     it('should return a blog by id', async () => {
@@ -49,5 +50,47 @@ describe('GET /blogs/{id}', () => {
 
         expect(res.status).toBe(404);
         expect(res.body).toStrictEqual({"errorsMessages": [{"field": "id", "message": "Blog not found"}]});
+    });
+});
+
+describe('/post', () => {
+    // Перед каждым тестом очищаем "базу данных"
+    beforeAll(async () => {
+        blogsDB = blogDB;
+    })
+    it('should create a new blog with valid data and authorization', async () => {
+        const buff2 = Buffer.from(ADMIN_AUTH, 'utf8');
+        const codedAuth = buff2.toString('base64');
+
+        const newBlog = {
+            name: 'Blog 3',
+            description: 'Third blog',
+            websiteUrl: 'https://samurai-blog-3.com'
+        }
+
+        const res = await req
+            .post(SETTINGS.PATH.BLOGS)
+            .set({ 'Authorization': 'Basic ' + codedAuth })
+            .send(newBlog)
+            .expect(201);
+
+        console.log(res.body)
+    });
+    it('should return 400 if name is missing', async () => {
+        const buff2 = Buffer.from(ADMIN_AUTH, 'utf8');
+        const codedAuth = buff2.toString('base64');
+
+        const newBlog = {
+            description: 'Third blog',
+            websiteUrl: 'https://samurai-blog-3.com'
+        }
+
+        const res = await req
+            .post(SETTINGS.PATH.BLOGS)
+            .set({ 'Authorization': 'Basic ' + codedAuth })
+            .send(newBlog)
+            .expect(400);
+
+        console.log(res.body)
     });
 });

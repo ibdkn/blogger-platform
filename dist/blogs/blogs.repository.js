@@ -4,9 +4,9 @@ exports.blogsRepository = void 0;
 const blogs_db_1 = require("../db/blogs.db");
 exports.blogsRepository = {
     getAllBlogs() {
-        return blogs_db_1.blogs;
+        return blogs_db_1.blogDB;
     },
     getBlog(id) {
-        return blogs_db_1.blogs.find(blog => blog.id === id);
+        return blogs_db_1.blogDB.find(blog => blog.id === id);
     }
 };

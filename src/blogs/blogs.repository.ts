@@ -1,11 +1,11 @@
-import {blogs} from "../db/blogs.db";
 import { BlogType } from './blogs.types';
+import {blogDB} from "../db/blogs.db";
 
 export const blogsRepository = {
     getAllBlogs(): BlogType[] {
-        return blogs;
+        return blogDB;
     },
-    getBlog(id: number): BlogType | undefined {
-        return blogs.find(blog => blog.id === id);
+    getBlog(id: string): BlogType | undefined {
+        return blogDB.find(blog => blog.id === id);
     }
 }
