@@ -13,10 +13,10 @@ const testing_router_1 = require("./testing/testing.router");
 exports.app = (0, express_1.default)();
 exports.app.use(express_1.default.json());
 exports.app.use((0, cors_1.default)());
-// app.get('/', (req: Request, res: Response) => {
-//     // эндпоинт, который будет показывать на верселе какая версия бэкэнда сейчас залита
-//     res.status(200).json('Welcome to blogger-platform')
-// })
+exports.app.get('/', (req, res) => {
+    // эндпоинт, который будет показывать на верселе какая версия бэкэнда сейчас залита
+    res.status(200).json('Welcome to blogger-platform! Version 1.0');
+});
 exports.app.use(settings_1.SETTINGS.PATH.BLOGS, blogs_router_1.blogsRouter);
 exports.app.use(settings_1.SETTINGS.PATH.POSTS, posts_router_1.postsRouter);
 exports.app.use(settings_1.SETTINGS.PATH.TESTING, testing_router_1.testingRouter);
