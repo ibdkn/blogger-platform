@@ -1,5 +1,6 @@
 import {BlogType} from "../blogs/blogs.types";
 
+// TODO: переписать структуру БД, сделать ее общей для блогов и постов!
 export let blogDB: BlogType[] = [
     {
         id: '1',

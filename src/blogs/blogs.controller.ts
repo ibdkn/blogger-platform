@@ -1,7 +1,6 @@
 import {Request, Response} from "express";
 import {blogsRepository} from "./blogs.repository";
 import {BlogType} from "./blogs.types";
-import {blogDB} from "../db/blogs.db";
 
 export const blogsController = {
     getBlogs(req: Request, res: Response): void {
@@ -20,16 +19,29 @@ export const blogsController = {
         res.status(200).json(blog);
     },
     createBlog(req: Request, res: Response) {
-        const {name, description, websiteUrl} = req.body;
-
-        const newBlog: BlogType = {
-            id: `${Date.now()}-${Math.random()}`,
-            name,
-            description,
-            websiteUrl
-        };
-
-        blogDB.push(newBlog);
+        const newBlog = blogsRepository.createBlog(req.body.name, req.body.description, req.body.websiteUrl);
         res.status(201).json(newBlog);
+    },
+    updateBlog(req: Request<{ id: string }>, res: Response) {
+        const errors = blogsRepository.updateBlog(req.params.id, req.body.name, req.body.description, req.body.websiteUrl);
+
+        // Если репозиторий вернул ошибки, отправляем 404 с описанием
+        if (errors) {
+            res.status(404).json({ errorsMessages: errors });
+        }
+
+        // Если всё успешно, отправляем 204
+        res.status(204).send();
+    },
+    deleteBlog(req: Request<{ id: string }>, res: Response) {
+        const errors = blogsRepository.deleteBlog(req.params.id);
+
+        // Если репозиторий вернул ошибки, отправляем 404 с описанием
+        if (errors) {
+            res.status(404).json({ errorsMessages: errors });
+        }
+
+        // Если всё успешно, отправляем 204
+        res.status(204).send();
     }
 }

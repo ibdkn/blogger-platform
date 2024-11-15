@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogDB = void 0;
+// TODO: переписать структуру БД, сделать ее общей для блогов и постов!
 exports.blogDB = [
     {
         id: '1',

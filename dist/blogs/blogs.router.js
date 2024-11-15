@@ -9,3 +9,5 @@ exports.blogsRouter = (0, express_1.Router)();
 exports.blogsRouter.get('/', blogs_controller_1.blogsController.getBlogs);
 exports.blogsRouter.get('/:id', blogs_controller_1.blogsController.getBlog);
 exports.blogsRouter.post('/', auth_middleware_1.authMiddleware, validators_1.validateCreateBlog, blogs_controller_1.blogsController.createBlog);
+exports.blogsRouter.put('/:id', auth_middleware_1.authMiddleware, validators_1.validateUpdateBlog, blogs_controller_1.blogsController.updateBlog);
+exports.blogsRouter.delete('/:id', auth_middleware_1.authMiddleware, blogs_controller_1.blogsController.deleteBlog);
