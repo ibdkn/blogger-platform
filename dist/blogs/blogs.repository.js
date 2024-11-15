@@ -36,7 +36,7 @@ exports.blogsRepository = {
         if (!blog)
             return [{ field: 'id', message: 'Blog not found' }];
         // Если блог найден, то удаляем его из бд
-        db_1.db.blogs = db_1.db.blogs.filter(blog => blog.id === id);
+        db_1.db.blogs = db_1.db.blogs.filter(blog => blog.id !== id);
         // Если всё успешно, ничего не возвращаем
     }
 };

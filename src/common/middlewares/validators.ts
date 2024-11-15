@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import {blogsRepository} from "../../blogs/blogs.repository";
 
 export const validateBlogFields = (req: Request, res: Response, next: NextFunction): void => {
     const { name, description, websiteUrl } = req.body;
@@ -52,6 +53,11 @@ export const validatePostFields = (req: Request, res: Response, next: NextFuncti
     // Проверка id блога
     if (!blogId || blogId.trim().length === 0) {
         errors.push({ field: 'blogId', message: 'BlogId is required' });
+    }
+
+    // Проверка на существущий blogId
+    if (!blogId || !blogsRepository.getBlog(blogId)) {
+        errors.push({ field: 'blogId', message: 'Invalid blogId or blog does not exist' });
     }
 
     // Если есть ошибки, возвращаем ответ с кодом 400
