@@ -9,10 +9,10 @@ export const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.get('/', (req: Request, res: Response) => {
-    // эндпоинт, который будет показывать на верселе какая версия бэкэнда сейчас залита
-    res.status(200).json('Welcome to blogger-platform')
-})
+// app.get('/', (req: Request, res: Response) => {
+//     // эндпоинт, который будет показывать на верселе какая версия бэкэнда сейчас залита
+//     res.status(200).json('Welcome to blogger-platform')
+// })
 
 app.use(SETTINGS.PATH.BLOGS, blogsRouter);
 app.use(SETTINGS.PATH.POSTS, postsRouter);

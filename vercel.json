@@ -5,13 +5,6 @@
     { "src": "src/index.ts", "use": "@vercel/node" }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "src/index.ts",
-      "headers": {
-        "Cache-Control": "no-store"
-      }
-    },
     { "src": "/(.*)", "dest": "src/index.ts" }
   ]
 }
