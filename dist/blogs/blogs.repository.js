@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogsRepository = void 0;
-const blogs_db_1 = require("../db/blogs.db");
+const db_1 = require("../db/db");
 exports.blogsRepository = {
     getAllBlogs() {
-        return blogs_db_1.blogDB;
+        return db_1.db.blogs;
     },
     getBlog(id) {
-        return blogs_db_1.blogDB.find(blog => blog.id === id);
+        return db_1.db.blogs.find(blog => blog.id === id);
     },
     createBlog(name, description, websiteUrl) {
         const newBlog = {
@@ -16,7 +16,7 @@ exports.blogsRepository = {
             description,
             websiteUrl
         };
-        blogs_db_1.blogDB.push(newBlog);
+        db_1.db.blogs.push(newBlog);
         return newBlog;
     },
     updateBlog(id, newName, newDescription, newWebsiteUrl) {
@@ -36,11 +36,7 @@ exports.blogsRepository = {
         if (!blog)
             return [{ field: 'id', message: 'Blog not found' }];
         // Если блог найден, то удаляем его из бд
-        // TODO: сейчас мутируем массив, удаляя блог, но потом перепишем структуру бд и изменим этот код
-        const index = blogs_db_1.blogDB.findIndex(b => b.id === id);
-        if (index !== -1) {
-            blogs_db_1.blogDB.splice(index, 1);
-        }
+        db_1.db.blogs = db_1.db.blogs.filter(blog => blog.id === id);
         // Если всё успешно, ничего не возвращаем
     }
 };

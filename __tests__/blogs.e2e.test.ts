@@ -42,7 +42,7 @@ describe('GET /blogs/{id}', () => {
     });
 
     it('should return 404 Not Found', async () => {
-        const blogId = 3;
+        const blogId = '3';
         const res = await req
             .get(`${SETTINGS.PATH.BLOGS}/${blogId}`)
             .expect(404)

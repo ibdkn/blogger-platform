@@ -8,5 +8,6 @@ exports.SETTINGS = {
     PATH: {
         BLOGS: '/blogs',
         POSTS: '/posts',
+        TESTING: '/testing/all-data',
     },
 };
