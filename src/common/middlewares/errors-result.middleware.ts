@@ -5,12 +5,12 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-        const errorsMessages = errors
+        const formattedErrors = errors
             .array({onlyFirstError: true})
             .map((err) => {
                 return {message: err.msg, field: (err as any).param}
             });
-        res.status(400).json({ errorsMessages });
+        res.status(400).json({ errorsMessages: formattedErrors });
     }
 
     next();
