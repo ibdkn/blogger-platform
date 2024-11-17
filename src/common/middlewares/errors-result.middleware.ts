@@ -8,7 +8,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
         const formattedErrors = errors
             .array({onlyFirstError: true})
             .map((err) => {
-                return {message: err.msg, field: (err as any).param}
+                return {field: (err as any).param, message: err.msg, }
             });
         res.status(400).json({ errorsMessages: formattedErrors });
     }
