@@ -13,7 +13,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
                 message: err.msg,
             }));
 
-        return res.status(400).json({ errorsMessages: formattedErrors });
+        res.status(400).json({ errorsMessages: formattedErrors });
     }
 
     next();
