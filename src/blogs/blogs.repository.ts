@@ -1,46 +1,109 @@
-import { BlogType } from './blogs.types';
-import {db} from "../db/db";
+import {BlogType, BlogViewModelType} from './blogs.types';
+import {blogsCollection} from "../db/db";
+import {ObjectId} from "mongodb";
 
 export const blogsRepository = {
-    getAllBlogs(): BlogType[] {
-        return db.blogs;
+    async getAllBlogs(): Promise<BlogType>[] {
+        const blogs = await blogsCollection
+            .find({})
+            .toArray();
+
+        // Преобразуем каждый документ
+        return blogs.map((blog) => ({
+            id: blog._id.toString(),
+            name: blog.name,
+            description: blog.description,
+            websiteUrl: blog.websiteUrl,
+            createdAt: blog.createdAt,
+            isMembership: blog.isMembership,
+        }));
     },
-    getBlog(id: string): BlogType | undefined {
-        return db.blogs.find(blog => blog.id === id);
+    async getBlog(id: string): Promise<BlogViewModelType> | null {
+        if (!ObjectId.isValid(id)) return [{ field: 'id', message: 'Invalid ObjectId' }];
+
+        // Преобразуем строку id в ObjectId
+        const blog = await blogsCollection
+            .findOne({_id: new ObjectId(id) });
+
+        if (blog) {
+            // Преобразуем _id в id и возвращаем нужный формат
+            return {
+                id: blog._id.toString(),
+                name: blog.name,
+                description: blog.description,
+                websiteUrl: blog.websiteUrl,
+                createdAt: blog.createdAt,
+                isMembership: blog.isMembership,
+            };
+        } else {
+            return null;
+        }
     },
-    createBlog(name: string, description: string, websiteUrl: string): BlogType {
-        const newBlog: BlogType = {
-            id: `${Date.now()}-${Math.random()}`,
-            name,
-            description,
-            websiteUrl
+    async createBlog(body: BlogType): Promise<BlogViewModelType> {
+        const blog: BlogType = {
+            name: body.name,
+            description: body.description,
+            websiteUrl: body.websiteUrl,
+            createdAt: new Date().toISOString(),
+            isMembership: true
         };
 
-        db.blogs.push(newBlog);
-        return newBlog;
+        // Вставляем блог в коллекцию
+        const result = await blogsCollection
+            .insertOne(blog);
+
+        // Проверяем, что вставка прошла успешно, и формируем объект результата
+        if (result.acknowledged) {
+            return {
+                id: result.insertedId.toString(), // Преобразуем _id в строку
+                name: blog.name,
+                description: blog.description,
+                websiteUrl: blog.websiteUrl,
+                createdAt: blog.createdAt,
+                isMembership: blog.isMembership
+            };
+        } else {
+            throw new Error('Failed to create a blog');
+        }
     },
-    updateBlog(id: string, newName: string, newDescription: string, newWebsiteUrl: string): Array<{ field: string; message: string }> | void {
-        const blog: BlogType | undefined = this.getBlog(id);
+    async updateBlog(id: string, body: BlogType): Promise<Array<{ field: string; message: string }> | void> {
+        if (!ObjectId.isValid(id)) return [{ field: 'id', message: 'Invalid ObjectId' }];
+
+        const blog: Promise<BlogViewModelType> | null = await this.getBlog(id);
 
         // Если блог не найден, возвращаем массив ошибок
         if (!blog) return [{ field: 'id', message: 'Blog not found' }];
 
         // Обновляем свойства блога
-        blog.name = newName;
-        blog.description = newDescription;
-        blog.websiteUrl = newWebsiteUrl;
+        const result = await blogsCollection
+            .updateOne(
+                { _id: new ObjectId(id) }, // Условие поиска
+                {
+                    $set: {
+                        name: body.name,
+                        description: body.description,
+                        websiteUrl: body.websiteUrl,
+                        isMembership: body.isMembership
+                    }
+                })
 
-        // Если всё успешно, ничего не возвращаем
+        // Если ничего не обновлено, возвращаем ошибку
+        if (result.matchedCount === 0) {
+            return [{ field: 'id', message: 'Blog not found' }];
+        }
     },
-    deleteBlog(id: string): Array<{ field: string; message: string }> | void {
-        const blog: BlogType | undefined = this.getBlog(id);
+    async deleteBlog(id: string): Promise<Array<{ field: string; message: string }> | boolean> {
+        if (!ObjectId.isValid(id)) return [{ field: 'id', message: 'Invalid ObjectId' }];
+
+        const blog: Promise<BlogViewModelType> | null = await this.getBlog(id);
 
         // Если блог не найден, возвращаем массив ошибок
         if (!blog) return [{ field: 'id', message: 'Blog not found' }];
 
         // Если блог найден, то удаляем его из бд
-        db.blogs = db.blogs.filter(blog => blog.id !== id);
+        const result = await blogsCollection
+            .deleteOne({_id: new ObjectId(id)})
 
-        // Если всё успешно, ничего не возвращаем
+        // return result.deletedCount > 0;
     }
 }

@@ -3,7 +3,6 @@ import { Request, Response, NextFunction } from 'express';
 
 export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
-    console.log(errors.array());
 
     if (!errors.isEmpty()) {
         const formattedErrors = errors
@@ -14,6 +13,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
             }));
 
         res.status(400).json({ errorsMessages: formattedErrors });
+        return;
     }
 
     next();
