@@ -1,5 +1,4 @@
 export type PostType = {
-    id: string,
     title: string,
     shortDescription: string,
     content: string,
@@ -7,3 +6,7 @@ export type PostType = {
     blogName: string,
     createdAt: string
 };
+
+export type PostViewModelType = {
+    id: string
+} & PostType

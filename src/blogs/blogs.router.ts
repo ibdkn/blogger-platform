@@ -2,7 +2,7 @@ import {Router} from "express";
 import {blogsController} from "./blogs.controller";
 import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {handleValidationErrors} from "../common/middlewares/errors-result.middleware";
-import {validateBlogsFields} from "../common/validation/blogs-validators";
+import {validateBlogsFields} from "./blogs.validation";
 
 export const blogsRouter = Router();
 

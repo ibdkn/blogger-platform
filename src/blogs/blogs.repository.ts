@@ -1,9 +1,10 @@
 import {BlogType, BlogViewModelType} from './blogs.types';
 import {blogsCollection} from "../db/db";
 import {ObjectId} from "mongodb";
+import {ValidationError} from "../common/types/error.types";
 
 export const blogsRepository = {
-    async getAllBlogs(): Promise<BlogType>[] {
+    async getAllBlogs(): Promise<BlogViewModelType[]> {
         const blogs = await blogsCollection
             .find({})
             .toArray();
@@ -18,12 +19,12 @@ export const blogsRepository = {
             isMembership: blog.isMembership,
         }));
     },
-    async getBlog(id: string): Promise<BlogViewModelType> | null {
-        if (!ObjectId.isValid(id)) return [{ field: 'id', message: 'Invalid ObjectId' }];
+    async getBlog(id: string): Promise<BlogViewModelType | ValidationError[] | null> {
+        if (!ObjectId.isValid(id)) return [{field: 'id', message: 'Invalid ObjectId'}];
 
         // Преобразуем строку id в ObjectId
         const blog = await blogsCollection
-            .findOne({_id: new ObjectId(id) });
+            .findOne({_id: new ObjectId(id)});
 
         if (blog) {
             // Преобразуем _id в id и возвращаем нужный формат
@@ -39,8 +40,8 @@ export const blogsRepository = {
             return null;
         }
     },
-    async createBlog(body: BlogType): Promise<BlogViewModelType> {
-        const blog: BlogType = {
+    async createBlog(body: Omit<BlogType, 'createdAt' | 'isMembership'>): Promise<BlogViewModelType> {
+        const blog = {
             name: body.name,
             description: body.description,
             websiteUrl: body.websiteUrl,
@@ -48,7 +49,6 @@ export const blogsRepository = {
             isMembership: true
         };
 
-        // Вставляем блог в коллекцию
         const result = await blogsCollection
             .insertOne(blog);
 
@@ -66,18 +66,18 @@ export const blogsRepository = {
             throw new Error('Failed to create a blog');
         }
     },
-    async updateBlog(id: string, body: BlogType): Promise<Array<{ field: string; message: string }> | void> {
-        if (!ObjectId.isValid(id)) return [{ field: 'id', message: 'Invalid ObjectId' }];
+    async updateBlog(id: string, body: BlogType): Promise<ValidationError[] | void> {
+        if (!ObjectId.isValid(id)) return [{field: 'id', message: 'Invalid ObjectId'}];
 
-        const blog: Promise<BlogViewModelType> | null = await this.getBlog(id);
+        const blog = await this.getBlog(id);
 
         // Если блог не найден, возвращаем массив ошибок
-        if (!blog) return [{ field: 'id', message: 'Blog not found' }];
+        if (!blog) return [{field: 'id', message: 'Blog not found'}];
 
         // Обновляем свойства блога
         const result = await blogsCollection
             .updateOne(
-                { _id: new ObjectId(id) }, // Условие поиска
+                {_id: new ObjectId(id)}, // Условие поиска
                 {
                     $set: {
                         name: body.name,
@@ -89,21 +89,23 @@ export const blogsRepository = {
 
         // Если ничего не обновлено, возвращаем ошибку
         if (result.matchedCount === 0) {
-            return [{ field: 'id', message: 'Blog not found' }];
+            return [{field: 'id', message: 'Blog not found'}];
         }
     },
-    async deleteBlog(id: string): Promise<Array<{ field: string; message: string }> | boolean> {
-        if (!ObjectId.isValid(id)) return [{ field: 'id', message: 'Invalid ObjectId' }];
+    async deleteBlog(id: string): Promise<ValidationError[] | void> {
+        if (!ObjectId.isValid(id)) return [{field: 'id', message: 'Invalid ObjectId'}];
 
-        const blog: Promise<BlogViewModelType> | null = await this.getBlog(id);
+        const blog = await this.getBlog(id);
 
         // Если блог не найден, возвращаем массив ошибок
-        if (!blog) return [{ field: 'id', message: 'Blog not found' }];
+        if (!blog) return [{field: 'id', message: 'Blog not found'}];
 
         // Если блог найден, то удаляем его из бд
         const result = await blogsCollection
             .deleteOne({_id: new ObjectId(id)})
 
-        // return result.deletedCount > 0;
+        if (result.deletedCount === 0) {
+            return [{ field: 'id', message: 'Blog not found' }];
+        }
     }
 }

@@ -61,7 +61,6 @@ exports.blogsRepository = {
                 createdAt: new Date().toISOString(),
                 isMembership: true
             };
-            // Вставляем блог в коллекцию
             const result = yield db_1.blogsCollection
                 .insertOne(blog);
             // Проверяем, что вставка прошла успешно, и формируем объект результата
@@ -116,7 +115,9 @@ exports.blogsRepository = {
             // Если блог найден, то удаляем его из бд
             const result = yield db_1.blogsCollection
                 .deleteOne({ _id: new mongodb_1.ObjectId(id) });
-            // return result.deletedCount > 0;
+            if (result.deletedCount === 0) {
+                return [{ field: 'id', message: 'Blog not found' }];
+            }
         });
     }
 };
