@@ -1,8 +1,10 @@
-import {db} from "../db/db";
+import {blogsCollection, postsCollection} from "../db/db";
 
 export const testingRepository = {
-    deleteAllData() {
-        db.blogs = [];
-        db.posts = [];
+    async deleteAllData(): Promise<void> {
+        await Promise.all([
+            postsCollection.deleteMany({}),
+            blogsCollection.deleteMany({})
+        ]);
     }
 }
