@@ -57,7 +57,7 @@ exports.blogsRepository = {
                 description: body.description,
                 websiteUrl: body.websiteUrl,
                 createdAt: new Date().toISOString(),
-                isMembership: true
+                isMembership: false
             };
             const result = yield db_1.blogsCollection
                 .insertOne(blog);

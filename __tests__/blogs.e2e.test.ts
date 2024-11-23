@@ -104,7 +104,7 @@ describe('POST /blogs', () => {
         expect(res.body).toHaveProperty('description', 'New Test Description');
         expect(res.body).toHaveProperty('websiteUrl', 'https://newtestblog.com');
         expect(res.body).toHaveProperty('createdAt');
-        expect(res.body).toHaveProperty('isMembership', true);
+        expect(res.body).toHaveProperty('isMembership', false);
     });
 
     it('should return 400 if name is missing', async () => {
@@ -203,6 +203,7 @@ describe('PUT /blogs/{id}', () => {
     it('should return 404 not found', async () => {
         const buff2 = Buffer.from(ADMIN_AUTH, 'utf8');
         const codedAuth = buff2.toString('base64');
+        const blogId = '6741c065fca86a3b15e88e41'
 
         const newBlog = {
             name: 'Updated blog',
@@ -211,7 +212,7 @@ describe('PUT /blogs/{id}', () => {
         }
 
         const res = await req
-            .put(`${SETTINGS.PATH.BLOGS}/${insertedBlogId}123`)
+            .put(`${SETTINGS.PATH.BLOGS}/${blogId}`)
             .set({ 'Authorization': 'Basic ' + codedAuth })
             .send(newBlog)
             .expect(404);
@@ -220,7 +221,7 @@ describe('PUT /blogs/{id}', () => {
         expect(res.body).toHaveProperty('errorsMessages');
         expect(res.body.errorsMessages).toEqual(
             expect.arrayContaining([
-                { field: 'id', message: 'Invalid ObjectId' }
+                {"field": "id", "message": "Blog not found"}
             ])
         );
     });
