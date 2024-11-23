@@ -79,8 +79,6 @@ export const blogsRepository = {
                         name: body.name,
                         description: body.description,
                         websiteUrl: body.websiteUrl,
-                        createdAt: body.createdAt,
-                        isMembership: body.isMembership
                     }
                 })
 
