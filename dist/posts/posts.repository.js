@@ -76,7 +76,7 @@ exports.postsRepository = {
                     content: post.content,
                     blogId: post.blogId,
                     blogName: post.blogName,
-                    createdAt: new Date().toISOString(),
+                    createdAt: post.createdAt,
                 };
             }
             else {

@@ -91,8 +91,6 @@ exports.blogsRepository = {
                     name: body.name,
                     description: body.description,
                     websiteUrl: body.websiteUrl,
-                    isMembership: body.isMembership,
-                    createdAt: body.createdAt
                 }
             });
             // Если ничего не обновлено, возвращаем ошибку
