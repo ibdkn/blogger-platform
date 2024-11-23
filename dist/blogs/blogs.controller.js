@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogsController = void 0;
 const blogs_repository_1 = require("./blogs.repository");
+const mongodb_1 = require("mongodb");
 exports.blogsController = {
     getBlogs(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -20,7 +21,15 @@ exports.blogsController = {
     },
     getBlog(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const blog = yield blogs_repository_1.blogsRepository.getBlog(req.params.id);
+            const blogId = req.params.id;
+            // Проверяем валидность ObjectId
+            if (!mongodb_1.ObjectId.isValid(blogId)) {
+                res.status(400).json({
+                    errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
+                });
+                return;
+            }
+            const blog = yield blogs_repository_1.blogsRepository.getBlog(blogId);
             if (!blog) {
                 res.status(404).json({
                     errorsMessages: [{ field: 'id', message: 'Blog not found' }]
@@ -38,7 +47,15 @@ exports.blogsController = {
     },
     updateBlog(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const errors = yield blogs_repository_1.blogsRepository.updateBlog(req.params.id, req.body);
+            const blogId = req.params.id;
+            // Проверяем валидность ObjectId
+            if (!mongodb_1.ObjectId.isValid(blogId)) {
+                res.status(400).json({
+                    errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
+                });
+                return;
+            }
+            const errors = yield blogs_repository_1.blogsRepository.updateBlog(blogId, req.body);
             // Если репозиторий вернул ошибки, отправляем 404 с описанием
             if (errors) {
                 res.status(404).json({ errorsMessages: errors });
@@ -50,7 +67,15 @@ exports.blogsController = {
     },
     deleteBlog(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const errors = yield blogs_repository_1.blogsRepository.deleteBlog(req.params.id);
+            const blogId = req.params.id;
+            // Проверяем валидность ObjectId
+            if (!mongodb_1.ObjectId.isValid(blogId)) {
+                res.status(400).json({
+                    errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
+                });
+                return;
+            }
+            const errors = yield blogs_repository_1.blogsRepository.deleteBlog(blogId);
             // Если репозиторий вернул ошибки, отправляем 404 с описанием
             if (errors) {
                 res.status(404).json({ errorsMessages: errors });

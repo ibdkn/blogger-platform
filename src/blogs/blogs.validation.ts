@@ -20,6 +20,7 @@ export const descriptionValidator = body('description')
     .isLength({ max: 100 }).withMessage('Description must be at most 100 symbols');
 
 
+
 export const validateBlogsFields = [
     nameValidator,
     websiteUrlValidator,

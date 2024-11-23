@@ -31,8 +31,6 @@ exports.blogsRepository = {
     },
     getBlog(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!mongodb_1.ObjectId.isValid(id))
-                return [{ field: 'id', message: 'Invalid ObjectId' }];
             // Преобразуем строку id в ObjectId
             const blog = yield db_1.blogsCollection
                 .findOne({ _id: new mongodb_1.ObjectId(id) });
@@ -81,8 +79,6 @@ exports.blogsRepository = {
     },
     updateBlog(id, body) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!mongodb_1.ObjectId.isValid(id))
-                return [{ field: 'id', message: 'Invalid ObjectId' }];
             const blog = yield this.getBlog(id);
             // Если блог не найден, возвращаем массив ошибок
             if (!blog)
@@ -106,8 +102,6 @@ exports.blogsRepository = {
     },
     deleteBlog(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!mongodb_1.ObjectId.isValid(id))
-                return [{ field: 'id', message: 'Invalid ObjectId' }];
             const blog = yield this.getBlog(id);
             // Если блог не найден, возвращаем массив ошибок
             if (!blog)
@@ -116,7 +110,7 @@ exports.blogsRepository = {
             const result = yield db_1.blogsCollection
                 .deleteOne({ _id: new mongodb_1.ObjectId(id) });
             if (result.deletedCount === 0) {
-                return [{ field: 'id', message: 'Blog not found' }];
+                return [{ field: 'id', message: 'Blog was not deleted' }];
             }
         });
     }

@@ -1,13 +1,33 @@
 import {SETTINGS} from "../src/settings";
-import {req} from "./test-helpers";
+import {req, setupTestData} from "./test-helpers";
 import {ADMIN_AUTH} from "../src/common/middlewares/auth.middleware";
-import {setPostDB} from "../src/db/db";
+import {postsCollection, runDb} from "../src/db/db";
+import {MongoMemoryServer} from "mongodb-memory-server";
 
 describe('GET /posts', () => {
-    // Перед каждым тестом очищаем "базу данных"
+    // Перед каждым тестом очищаем "базу данных" и добавляем фиктивные данные
     beforeAll(async () => {
-        setPostDB();
-    })
+        // вариант для работы с реальной бд
+        // await runDb(SETTINGS.MONGO_URL);
+        // await blogsCollection.deleteMany();
+
+        // временная (in-memory) версия бд
+        const server = await MongoMemoryServer.create();
+        const url = server.getUri();
+        await runDb(url);
+        await postsCollection.deleteMany();
+    });
+
+    let insertedPostId: string;
+    let insertedBlogId: string;
+    let insertedBlogName: string;
+
+    beforeEach(async () => {
+        const result =  await setupTestData();
+        insertedPostId = result.postId;
+        insertedBlogId = result.blogId;
+        insertedBlogName = result.blogName;
+    });
 
     it('should return all posts', async () => {
         const res = await req
@@ -15,60 +35,89 @@ describe('GET /posts', () => {
             .expect(200)
 
         expect(res.status).toBe(200);
-        expect(res.body).toEqual([
-            {id: '1', title: 'Post 1', shortDescription: 'description for post 1', content: 'content for post 1', blogId: '1', blogName: 'Blog 1',},
-            {id: '2', title: 'Post 2', shortDescription: 'description for post 2', content: 'content for post 2', blogId: '1', blogName: 'Blog 1',},
-            {id: '3', title: 'Post 3', shortDescription: 'description for post 3', content: 'content for post 3', blogId: '2', blogName: 'Blog 2',},
-        ]);
+        console.log(res.body)
     });
 });
 
 describe('GET /posts/{id}', () => {
-    // Перед каждым тестом очищаем "базу данных"
+    // Перед каждым тестом очищаем "базу данных" и добавляем фиктивные данные
     beforeAll(async () => {
-         setPostDB();
-    })
+        // временная (in-memory) версия бд
+        const server = await MongoMemoryServer.create();
+        const url = server.getUri();
+        await runDb(url);
+        await postsCollection.deleteMany();
+    });
+
+    let insertedPostId: string;
+    let insertedBlogId: string;
+    let insertedBlogName: string;
+
+    beforeEach(async () => {
+        const result =  await setupTestData();
+        insertedPostId = result.postId;
+        insertedBlogId = result.blogId;
+        insertedBlogName = result.blogName;
+    });
 
     it('should return a post by id', async () => {
-        const postId = '2';
         const res = await req
-            .get(`${SETTINGS.PATH.POSTS}/${postId}`)
+            .get(`${SETTINGS.PATH.POSTS}/${insertedPostId}`)
             .expect(200)
 
         expect(res.status).toBe(200);
-        expect(res.body.id).toEqual('2');
-        expect(res.body).toEqual(
-            {id: '2', title: 'Post 2', shortDescription: 'description for post 2', content: 'content for post 2', blogId: '1', blogName: 'Blog 1',},
-        );
+        expect(res.body).toStrictEqual({
+            id: insertedPostId,
+            title: 'Post 1',
+            shortDescription: 'This is a short description for Post 1',
+            content: 'Detailed content for Post 1',
+            blogId: insertedBlogId,
+            blogName: insertedBlogName,
+            createdAt: expect.any(String),
+        });
     });
 
     it('should return 404 not found', async () => {
-        const postId = 4;
         const res = await req
-            .get(`${SETTINGS.PATH.POSTS}/${postId}`)
+            .get(`${SETTINGS.PATH.POSTS}/673f8d910c6c9590f35ce330`)
             .expect(404)
 
         expect(res.status).toBe(404);
+        console.log(res.body)
         expect(res.body).toStrictEqual({"errorsMessages": [{"field": "id", "message": "Post not found"}]});
     });
 });
 
 describe('POST /posts', () => {
-    // Перед каждым тестом очищаем "базу данных"
+    // Перед каждым тестом очищаем "базу данных" и добавляем фиктивные данные
     beforeAll(async () => {
-         setPostDB();
-    })
+        // временная (in-memory) версия бд
+        const server = await MongoMemoryServer.create();
+        const url = server.getUri();
+        await runDb(url);
+        await postsCollection.deleteMany();
+    });
+
+    let insertedPostId: string;
+    let insertedBlogId: string;
+    let insertedBlogName: string;
+
+    beforeEach(async () => {
+        const result =  await setupTestData();
+        insertedPostId = result.postId;
+        insertedBlogId = result.blogId;
+        insertedBlogName = result.blogName;
+    });
+
     it('should create a new post with valid data and authorization', async () => {
         const buff2 = Buffer.from(ADMIN_AUTH, 'utf8');
         const codedAuth = buff2.toString('base64');
 
         const newPost = {
-            id: '4',
-            title: 'Post 4',
-            shortDescription: 'description for post 4',
-            content: 'content for post 4',
-            blogId: '2',
-            blogName: 'Blog 2',
+            title: 'Post 1',
+            shortDescription: 'This is a short description for Post 1',
+            content: 'Detailed content for Post 1',
+            blogId: insertedBlogId,
         }
 
         const res = await req
@@ -77,17 +126,24 @@ describe('POST /posts', () => {
             .send(newPost)
             .expect(201);
 
-        console.log(res.body)
+        console.log(res.body);
+        expect(res.body).toHaveProperty('id');
+        expect(res.body).toHaveProperty('title', 'Post 1');
+        expect(res.body).toHaveProperty('shortDescription', 'This is a short description for Post 1');
+        expect(res.body).toHaveProperty('content', 'Detailed content for Post 1');
+        expect(res.body).toHaveProperty('blogId', insertedBlogId);
+        expect(res.body).toHaveProperty('blogName', insertedBlogName);
+        expect(res.body).toHaveProperty('createdAt');
     });
+
     it('should return 400 if title is missing', async () => {
         const buff2 = Buffer.from(ADMIN_AUTH, 'utf8');
         const codedAuth = buff2.toString('base64');
 
         const newPost = {
-            shortDescription: 'description for post 4',
-            content: 'content for post 4',
-            blogId: '2',
-            blogName: 'Blog 2'
+            shortDescription: 'This is a short description for Post 1',
+            content: 'Detailed content for Post 1',
+            blogId: insertedBlogId,
         }
 
         const res = await req
@@ -96,14 +152,20 @@ describe('POST /posts', () => {
             .send(newPost)
             .expect(400);
 
-        console.log(res.body)
+        console.log(res.body);
+        expect(res.body.errorsMessages).toEqual(
+            expect.arrayContaining([
+                { field: 'title', message: 'Title is required' }
+            ])
+        );
     });
+
     it('should return 401 Unauthorized', async () => {
         const newPost = {
-            shortDescription: 'description for post 4',
-            content: 'content for post 4',
-            blogId: '2',
-            blogName: 'Blog 2'
+            title: 'Post 1',
+            shortDescription: 'This is a short description for Post 1',
+            content: 'Detailed content for Post 1',
+            blogId: insertedBlogId,
         }
 
         const res = await req
@@ -111,75 +173,107 @@ describe('POST /posts', () => {
             .send(newPost)
             .expect(401);
 
-        console.log(res.body)
+        console.log(res.body);
+        expect(res.body).toEqual({ message: 'Unauthorized' });
     });
 });
 
 describe('PUT /posts/{id}', () => {
-    // Перед каждым тестом очищаем "базу данных"
+    // Перед каждым тестом очищаем "базу данных" и добавляем фиктивные данные
     beforeAll(async () => {
-         setPostDB();
-    })
+        // временная (in-memory) версия бд
+        const server = await MongoMemoryServer.create();
+        const url = server.getUri();
+        await runDb(url);
+        await postsCollection.deleteMany();
+    });
+
+    let insertedPostId: string;
+    let insertedBlogId: string;
+    let insertedBlogName: string;
+
+    beforeEach(async () => {
+        const result =  await setupTestData();
+        insertedPostId = result.postId;
+        insertedBlogId = result.blogId;
+        insertedBlogName = result.blogName;
+    });
+
     it('should update post with new values', async () => {
         const buff2 = Buffer.from(ADMIN_AUTH, 'utf8');
         const codedAuth = buff2.toString('base64');
-        const id = '2';
 
-        const newPost = {
-            title: 'New title',
-            shortDescription: 'new description',
-            content: 'new content',
-            blogId: '2',
+        const updatedPost = {
+            title: 'Updated post',
+            shortDescription: 'This is a short description for Updated post',
+            content: 'Detailed content for Updated post',
+            blogId: insertedBlogId,
         };
 
-        const res = await req
-            .put(`${SETTINGS.PATH.POSTS}/${id}`)
+        await req
+            .put(`${SETTINGS.PATH.POSTS}/${insertedPostId}`)
             .set({ 'Authorization': 'Basic ' + codedAuth })
-            .send(newPost)
+            .send(updatedPost)
             .expect(204);
 
+        // Выполняем GET запрос для проверки обновленных данных
+        const res = await req
+            .get(`${SETTINGS.PATH.POSTS}/${insertedPostId}`)
+            .expect(200);
+
         console.log(res.body);
+        expect(res.body.title).toEqual('Updated post');
+        expect(res.body.shortDescription).toEqual('This is a short description for Updated post');
+        expect(res.body.content).toEqual('Detailed content for Updated post');
     });
+
     it('should return 404 not found', async () => {
         const buff2 = Buffer.from(ADMIN_AUTH, 'utf8');
         const codedAuth = buff2.toString('base64');
-        const id = '3';
+        const postId = '6741abc7910429194a13b8a2';
 
-        const newPost = {
-            title: 'New title',
-            shortDescription: 'new description',
-            content: 'new content',
-            blogId: '88',
-        }
+        const updatedPost = {
+            title: 'Updated post',
+            shortDescription: 'This is a short description for Updated post',
+            content: 'Detailed content for Updated post',
+            blogId: insertedBlogId,
+        };
 
         const res = await req
-            .put(`${SETTINGS.PATH.POSTS}/${id}`)
+            .put(`${SETTINGS.PATH.POSTS}/${postId}`)
             .set({ 'Authorization': 'Basic ' + codedAuth })
-            .send(newPost)
+            .send(updatedPost)
             .expect(404);
 
         console.log(res.body);
+        expect(res.body).toHaveProperty('errorsMessages');
+        expect(res.body.errorsMessages).toEqual(
+            expect.arrayContaining([
+                { field: 'id', message: 'Post not found' }
+            ])
+        );
     });
+
     it('should return 400 incorrect values', async () => {
         const buff2 = Buffer.from(ADMIN_AUTH, 'utf8');
         const codedAuth = buff2.toString('base64');
-        const id = '1';
 
-        const newPost = {
-            title: 'New title title title title title title title',
+        const updatedPost = {
+            title: 'Updated post with very long title',
             shortDescription: '',
             content: '',
-            blogId: '2',
-        }
+            // blogId: insertedBlogId,
+        };
 
         const res = await req
-            .put(`${SETTINGS.PATH.POSTS}/${id}`)
+            .put(`${SETTINGS.PATH.POSTS}/${insertedPostId}`)
             .set({ 'Authorization': 'Basic ' + codedAuth })
-            .send(newPost)
+            .send(updatedPost)
             .expect(400);
 
         console.log(res.body);
     });
+
     it('should return 401 unauthorized', async () => {
         const id = '1';
 
@@ -200,39 +294,53 @@ describe('PUT /posts/{id}', () => {
 });
 
 describe('DELETE /posts/{id}', () => {
-    // Перед каждым тестом очищаем "базу данных"
+    // Перед каждым тестом очищаем "базу данных" и добавляем фиктивные данные
     beforeAll(async () => {
-         setPostDB();
-    })
+        // временная (in-memory) версия бд
+        const server = await MongoMemoryServer.create();
+        const url = server.getUri();
+        await runDb(url);
+        await postsCollection.deleteMany();
+    });
+
+    let insertedPostId: string;
+    let insertedBlogId: string;
+    let insertedBlogName: string;
+
+    beforeEach(async () => {
+        const result =  await setupTestData();
+        insertedPostId = result.postId;
+        insertedBlogId = result.blogId;
+        insertedBlogName = result.blogName;
+    });
+
     it('should delete post', async () => {
         const buff2 = Buffer.from(ADMIN_AUTH, 'utf8');
         const codedAuth = buff2.toString('base64');
-        const id = '1';
 
         const res = await req
-            .delete(`${SETTINGS.PATH.POSTS}/${id}`)
+            .delete(`${SETTINGS.PATH.POSTS}/${insertedPostId}`)
             .set({ 'Authorization': 'Basic ' + codedAuth })
             .expect(204);
 
         console.log(res.body);
     });
+
     it('should return 404 not found', async () => {
         const buff2 = Buffer.from(ADMIN_AUTH, 'utf8');
         const codedAuth = buff2.toString('base64');
-        const id = '4';
+        const postId = '6741abc7910429194a13b8a2'
 
         const res = await req
-            .delete(`${SETTINGS.PATH.POSTS}/${id}`)
+            .delete(`${SETTINGS.PATH.POSTS}/${postId}`)
             .set({ 'Authorization': 'Basic ' + codedAuth })
             .expect(404);
 
         console.log(res.body);
     });
     it('should return 401 unauthorized', async () => {
-        const id = '3';
-
         const res = await req
-            .delete(`${SETTINGS.PATH.POSTS}/${id}`)
+            .delete(`${SETTINGS.PATH.POSTS}/${insertedPostId}`)
             .expect(401);
 
         console.log(res.body);

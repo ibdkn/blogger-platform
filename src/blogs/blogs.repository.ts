@@ -19,9 +19,7 @@ export const blogsRepository = {
             isMembership: blog.isMembership,
         }));
     },
-    async getBlog(id: string): Promise<BlogViewModelType | ValidationError[] | null> {
-        if (!ObjectId.isValid(id)) return [{field: 'id', message: 'Invalid ObjectId'}];
-
+    async getBlog(id: string): Promise<BlogViewModelType | null> {
         // Преобразуем строку id в ObjectId
         const blog = await blogsCollection
             .findOne({_id: new ObjectId(id)});
@@ -67,8 +65,6 @@ export const blogsRepository = {
         }
     },
     async updateBlog(id: string, body: BlogType): Promise<ValidationError[] | void> {
-        if (!ObjectId.isValid(id)) return [{field: 'id', message: 'Invalid ObjectId'}];
-
         const blog = await this.getBlog(id);
 
         // Если блог не найден, возвращаем массив ошибок
@@ -93,8 +89,6 @@ export const blogsRepository = {
         }
     },
     async deleteBlog(id: string): Promise<ValidationError[] | void> {
-        if (!ObjectId.isValid(id)) return [{field: 'id', message: 'Invalid ObjectId'}];
-
         const blog = await this.getBlog(id);
 
         // Если блог не найден, возвращаем массив ошибок
@@ -105,7 +99,7 @@ export const blogsRepository = {
             .deleteOne({_id: new ObjectId(id)})
 
         if (result.deletedCount === 0) {
-            return [{ field: 'id', message: 'Blog not found' }];
+            return [{ field: 'id', message: 'Blog was not deleted' }];
         }
     }
 }

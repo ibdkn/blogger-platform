@@ -11,71 +11,118 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postsRepository = void 0;
 const db_1 = require("../db/db");
+const mongodb_1 = require("mongodb");
+const blogs_repository_1 = require("../blogs/blogs.repository");
 exports.postsRepository = {
     getAllPosts() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield db_1.postsCollection
+            const posts = yield db_1.postsCollection
                 .find({})
                 .toArray();
+            // Преобразуем каждый документ
+            return posts.map((post) => ({
+                id: post._id.toString(),
+                title: post.title,
+                shortDescription: post.shortDescription,
+                content: post.content,
+                blogId: post.blogId,
+                blogName: post.blogName,
+            }));
         });
     },
-    // getPost(id: string): PostType | undefined {
-    //     return db.posts.find(post => post.id === id);
-    // },
-    // createPost(title: string,
-    //            shortDescription: string,
-    //            content: string,
-    //            blogId: string
-    // ): PostType | Array<{ field: string; message: string }> {
-    //     const blog: BlogType | undefined = blogsRepository.getBlog(blogId);
-    //
-    //     // Если пост не найден, возвращаем массив ошибок
-    //     if (!blog) return [{field: 'id', message: 'Blog not found'}];
-    //
-    //     const newPost: PostType = {
-    //         id: `${Date.now()}-${Math.random()}`,
-    //         title,
-    //         shortDescription,
-    //         content,
-    //         blogId,
-    //         blogName: blog.name
-    //     };
-    //
-    //     db.posts.push(newPost);
-    //     return newPost;
-    // },
-    // updatePost(
-    //     id: string,
-    //     newTitle: string,
-    //     newShortDescription: string,
-    //     newContent: string,
-    //     newBlogId: string
-    // ): Array<{ field: string; message: string }> | void {
-    //     const post: PostType | undefined = this.getPost(id);
-    //
-    //     // Если пост не найден, возвращаем массив ошибок
-    //     if (!post) return [{field: 'id', message: 'Post not found'}];
-    //
-    //     const blog: BlogType | undefined = blogsRepository.getBlog(newBlogId);
-    //
-    //     // Если блог не найден, возвращаем массив ошибок
-    //     if (!blog) return [{field: 'id', message: 'Blog not found'}];
-    //
-    //     // Обновляем свойства поста
-    //     post.title = newTitle;
-    //     post.shortDescription = newShortDescription;
-    //     post.content = newContent;
-    //     post.blogId = newBlogId;
-    //     post.blogName = blog.name;
-    //
-    //     // Если всё успешно, ничего не возвращаем
-    // },
-    // deletePost(id: string): Array<{ field: string; message: string }> | void {
-    //     const post: PostType | undefined = this.getPost(id);
-    //
-    //     // Если пост не найден, возвращаем массив ошибок
-    //     if (!post) return [{field: 'id', message: 'Post not found'}];
-    //
-    //     db.posts = db.posts.filter(post => post.id !== id);
-    // }
+    getPost(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const post = yield db_1.postsCollection
+                .findOne({ _id: new mongodb_1.ObjectId(id) });
+            if (post) {
+                // Преобразуем _id в id и возвращаем нужный формат
+                return {
+                    id: post._id.toString(),
+                    title: post.title,
+                    shortDescription: post.shortDescription,
+                    content: post.content,
+                    blogId: post.blogId,
+                    blogName: post.blogName,
+                    createdAt: post.createdAt,
+                };
+            }
+            else {
+                return null;
+            }
+        });
+    },
+    createPost(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const blog = yield blogs_repository_1.blogsRepository.getBlog(body.blogId);
+            // Если пост не найден, возвращаем массив ошибок
+            if (!blog)
+                return [{ field: 'id', message: 'Blog not found' }];
+            const post = {
+                title: body.title,
+                shortDescription: body.shortDescription,
+                content: body.content,
+                blogId: body.blogId,
+                blogName: blog.name,
+                createdAt: new Date().toISOString(),
+            };
+            const result = yield db_1.postsCollection
+                .insertOne(post);
+            // Проверяем, что вставка прошла успешно, и формируем объект результата
+            if (result.acknowledged) {
+                return {
+                    id: result.insertedId.toString(), // Преобразуем _id в строку
+                    title: post.title,
+                    shortDescription: post.shortDescription,
+                    content: post.content,
+                    blogId: post.blogId,
+                    blogName: post.blogName,
+                    createdAt: new Date().toISOString(),
+                };
+            }
+            else {
+                throw new Error('Failed to create a blog');
+            }
+        });
+    },
+    updatePost(id, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const post = yield this.getPost(id);
+            // Если пост не найден, возвращаем массив ошибок
+            if (!post)
+                return [{ field: 'id', message: 'Post not found' }];
+            const blog = yield blogs_repository_1.blogsRepository.getBlog(body.blogId);
+            // Если блог не найден, возвращаем массив ошибок
+            if (!blog)
+                return [{ field: 'id', message: 'Blog not found' }];
+            // Обновляем свойства поста
+            const result = yield db_1.postsCollection
+                .updateOne({ _id: new mongodb_1.ObjectId(id) }, // Условие поиска
+            {
+                $set: {
+                    title: body.title,
+                    shortDescription: body.shortDescription,
+                    content: body.content,
+                    blogId: body.blogId
+                }
+            });
+            // Если ничего не обновлено, возвращаем ошибку
+            if (result.matchedCount === 0) {
+                return [{ field: 'id', message: 'Post do not updated' }];
+            }
+        });
+    },
+    deletePost(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const post = yield this.getPost(id);
+            // Если пост не найден, возвращаем массив ошибок
+            if (!post)
+                return [{ field: 'id', message: 'Post not found' }];
+            // Если пост найден, то удаляем его из бд
+            const result = yield db_1.postsCollection
+                .deleteOne({ _id: new mongodb_1.ObjectId(id) });
+            if (result.deletedCount === 0) {
+                return [{ field: 'id', message: 'Post was not deleted' }];
+            }
+        });
+    }
 };

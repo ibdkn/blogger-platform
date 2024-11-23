@@ -2,7 +2,6 @@ import {SETTINGS} from "../src/settings";
 import {ADMIN_AUTH} from "../src/common/middlewares/auth.middleware";
 import {blogsCollection, runDb} from "../src/db/db";
 import {MongoMemoryServer} from "mongodb-memory-server";
-import {ObjectId} from "mongodb";
 import {createTestBlog, req} from "./test-helpers";
 
 describe('GET /blogs', () => {
@@ -17,7 +16,7 @@ describe('GET /blogs', () => {
         const url = server.getUri();
         await runDb(url);
         await blogsCollection.deleteMany();
-    })
+    });
 
     it('should return all blogs', async () => {
         const res = await req
@@ -39,7 +38,8 @@ describe('GET /blogs/{id}', () => {
 
     let insertedBlogId: string;
     beforeEach(async () => {
-        insertedBlogId = await createTestBlog();
+        const result =  await createTestBlog();
+        insertedBlogId = result.id;
     });
 
     it('should return a blog by id', async () => {
@@ -59,9 +59,8 @@ describe('GET /blogs/{id}', () => {
     });
 
     it('should return 404 Not Found', async () => {
-        const blogId = new ObjectId();
         const res = await req
-            .get(`${SETTINGS.PATH.BLOGS}/${blogId}`)
+            .get(`${SETTINGS.PATH.BLOGS}/673f71db5e4859dbbc403731`)
             .expect(404)
 
         expect(res.status).toBe(404);
@@ -80,7 +79,8 @@ describe('POST /blogs', () => {
 
     let insertedBlogId: string;
     beforeEach(async () => {
-        insertedBlogId = await createTestBlog();
+        const result =  await createTestBlog();
+        insertedBlogId = result.id;
     });
 
     it('should create a new blog with valid data and authorization', async () => {
@@ -169,7 +169,8 @@ describe('PUT /blogs/{id}', () => {
 
     let insertedBlogId: string;
     beforeEach(async () => {
-        insertedBlogId = await createTestBlog();
+        const result =  await createTestBlog();
+        insertedBlogId = result.id;
     });
 
     it('should update blog with new values', async () => {
@@ -279,7 +280,8 @@ describe('DELETE /blogs/{id}', () => {
 
     let insertedBlogId: string;
     beforeEach(async () => {
-        insertedBlogId = await createTestBlog();
+        const result =  await createTestBlog();
+        insertedBlogId = result.id;
     });
 
     it('should delete blog', async () => {

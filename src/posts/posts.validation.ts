@@ -1,5 +1,6 @@
 import {body} from 'express-validator';
 import {blogsRepository} from "../blogs/blogs.repository";
+import {ObjectId} from "mongodb";
 
 export const titleValidate = body('title')
     .trim()
@@ -22,11 +23,20 @@ export const contentValidate = body('content')
 export const blogIdValidate = body('blogId')
     .trim()
     .notEmpty().withMessage('BlogId is required')
-    .custom((blogId) => {
-        const blogExists = blogsRepository.getBlog(blogId);
-        return !!blogExists;
-    })
-    .withMessage('Blog does not exist');
+    .custom(async (blogId) => {
+        // Проверяем валидность ObjectId
+        if (!ObjectId.isValid(blogId)) {
+            throw new Error('Invalid ObjectId');
+        }
+
+        // Проверяем существование блога
+        const blogExists = await blogsRepository.getBlog(blogId);
+        if (!blogExists) {
+            throw new Error('Blog does not exist');
+        }
+
+        return true;
+    });
 
 export const validatePostFields = [
     titleValidate,

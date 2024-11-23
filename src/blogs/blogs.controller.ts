@@ -1,6 +1,7 @@
 import {Request, Response} from "express";
 import {blogsRepository} from "./blogs.repository";
 import {BlogViewModelType} from "./blogs.types";
+import {ObjectId} from "mongodb";
 
 export const blogsController = {
     async getBlogs(req: Request, res: Response): Promise<void> {
@@ -8,7 +9,17 @@ export const blogsController = {
         res.status(200).json(blogs);
     },
     async getBlog(req: Request, res: Response): Promise<void> {
-        const blog = await blogsRepository.getBlog(req.params.id);
+        const blogId = req.params.id;
+
+        // Проверяем валидность ObjectId
+        if (!ObjectId.isValid(blogId)) {
+            res.status(400).json({
+                errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
+            });
+            return;
+        }
+
+        const blog = await blogsRepository.getBlog(blogId);
 
         if (!blog) {
             res.status(404).json({
@@ -24,7 +35,17 @@ export const blogsController = {
         res.status(201).json(newBlog);
     },
    async updateBlog(req: Request, res: Response): Promise<void> {
-       const errors = await blogsRepository.updateBlog(req.params.id, req.body);
+       const blogId = req.params.id;
+
+       // Проверяем валидность ObjectId
+       if (!ObjectId.isValid(blogId)) {
+           res.status(400).json({
+               errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
+           });
+           return;
+       }
+
+       const errors = await blogsRepository.updateBlog(blogId, req.body);
 
        // Если репозиторий вернул ошибки, отправляем 404 с описанием
        if (errors) {
@@ -36,7 +57,17 @@ export const blogsController = {
        res.status(204).send();
    },
     async deleteBlog(req: Request, res: Response): Promise<void> {
-        const errors= await blogsRepository.deleteBlog(req.params.id);
+        const blogId = req.params.id;
+
+        // Проверяем валидность ObjectId
+        if (!ObjectId.isValid(blogId)) {
+            res.status(400).json({
+                errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
+            });
+            return;
+        }
+
+        const errors= await blogsRepository.deleteBlog(blogId);
 
         // Если репозиторий вернул ошибки, отправляем 404 с описанием
         if (errors) {
