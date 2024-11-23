@@ -18,6 +18,7 @@ export const postsRepository = {
             content: post.content,
             blogId: post.blogId,
             blogName: post.blogName,
+            createdAt: post.createdAt,
         }));
     },
    async getPost(id: string): Promise<PostViewModelType | ValidationError[] | null> {
