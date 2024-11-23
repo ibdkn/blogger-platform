@@ -1,7 +1,6 @@
 import {PostType, PostViewModelType, PostViewModelTypeWithoutCreatedAt} from "./posts.types";
-import {blogsCollection, postsCollection} from "../db/db";
+import {postsCollection} from "../db/db";
 import {ObjectId} from "mongodb";
-import {BlogViewModelType} from "../blogs/blogs.types";
 import {ValidationError} from "../common/types/error.types";
 import {blogsRepository} from "../blogs/blogs.repository";
 
