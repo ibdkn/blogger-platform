@@ -31,6 +31,21 @@ exports.postsRepository = {
             }));
         });
     },
+    getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return db_1.postsCollection
+                .find({ blogId }) // Фильтрация по blogId
+                .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+                .skip((pageNumber - 1) * pageSize)
+                .limit(pageSize)
+                .toArray();
+        });
+    },
+    getPostsCountByBlogId(blogId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return db_1.postsCollection.countDocuments({ blogId });
+        });
+    },
     getPost(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const post = yield db_1.postsCollection

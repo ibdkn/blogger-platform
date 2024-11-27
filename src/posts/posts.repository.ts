@@ -21,25 +21,42 @@ export const postsRepository = {
             createdAt: post.createdAt,
         }));
     },
-   async getPost(id: string): Promise<PostViewModelType | ValidationError[] | null> {
-       const post = await postsCollection
-           .findOne({_id: new ObjectId(id)});
+    async getPostsByBlogId(
+        blogId: string,
+        pageNumber: number,
+        pageSize: number,
+        sortBy: string,
+        sortDirection: 'asc' | 'desc'
+    ) {
+        return postsCollection
+            .find({blogId}) // Фильтрация по blogId
+            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray();
+    },
+    async getPostsCountByBlogId(blogId: string) {
+        return postsCollection.countDocuments({blogId});
+    },
+    async getPost(id: string): Promise<PostViewModelType | ValidationError[] | null> {
+        const post = await postsCollection
+            .findOne({_id: new ObjectId(id)});
 
-       if (post) {
-           // Преобразуем _id в id и возвращаем нужный формат
-           return {
-               id: post._id.toString(),
-               title: post.title,
-               shortDescription: post.shortDescription,
-               content: post.content,
-               blogId: post.blogId,
-               blogName: post.blogName,
-               createdAt: post.createdAt,
-           };
-       } else {
-           return null;
-       }
-   },
+        if (post) {
+            // Преобразуем _id в id и возвращаем нужный формат
+            return {
+                id: post._id.toString(),
+                title: post.title,
+                shortDescription: post.shortDescription,
+                content: post.content,
+                blogId: post.blogId,
+                blogName: post.blogName,
+                createdAt: post.createdAt,
+            };
+        } else {
+            return null;
+        }
+    },
     async createPost(body: Omit<PostType, 'blogName' | 'isMembership'>) {
         const blog = await blogsRepository.getBlog(body.blogId);
 
@@ -69,7 +86,7 @@ export const postsRepository = {
                 blogName: post.blogName,
                 createdAt: post.createdAt,
             };
-        }  else {
+        } else {
             throw new Error('Failed to create a blog');
         }
     },
@@ -113,7 +130,7 @@ export const postsRepository = {
             .deleteOne({_id: new ObjectId(id)})
 
         if (result.deletedCount === 0) {
-            return [{ field: 'id', message: 'Post was not deleted' }];
+            return [{field: 'id', message: 'Post was not deleted'}];
         }
     }
 }

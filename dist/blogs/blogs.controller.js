@@ -12,11 +12,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.blogsController = void 0;
 const blogs_repository_1 = require("./blogs.repository");
 const mongodb_1 = require("mongodb");
+const blogs_service_1 = require("./blogs.service");
+const pagination_helper_1 = require("../helpers/pagination.helper");
+const posts_service_1 = require("../posts/posts.service");
 exports.blogsController = {
     getBlogs(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const blogs = yield blogs_repository_1.blogsRepository.getAllBlogs();
+            const { pageNumber, pageSize, sortBy, sortDirection, searchNameTerm } = (0, pagination_helper_1.paginationQueries)(req);
+            const blogs = yield blogs_service_1.blogsService.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm);
             res.status(200).json(blogs);
+        });
+    },
+    getPosts(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { blogId } = req.params;
+            const { pageNumber, pageSize, sortBy, sortDirection } = (0, pagination_helper_1.paginationPostQueries)(req);
+            // Передаем параметры в сервис
+            const posts = yield posts_service_1.postsService.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
+            res.status(200).json(posts);
         });
     },
     getBlog(req, res) {
@@ -37,6 +50,10 @@ exports.blogsController = {
                 return;
             }
             res.status(200).json(blog);
+        });
+    },
+    createPost(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
         });
     },
     createBlog(req, res) {

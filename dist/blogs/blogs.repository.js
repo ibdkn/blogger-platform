@@ -13,20 +13,27 @@ exports.blogsRepository = void 0;
 const db_1 = require("../db/db");
 const mongodb_1 = require("mongodb");
 exports.blogsRepository = {
-    getAllBlogs() {
+    getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm) {
         return __awaiter(this, void 0, void 0, function* () {
-            const blogs = yield db_1.blogsCollection
-                .find({})
+            const filter = {};
+            if (searchNameTerm) {
+                filter.name = { $regex: searchNameTerm, $options: 'i' };
+            }
+            return db_1.blogsCollection
+                .find(filter)
+                .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+                .skip((pageNumber - 1) * pageSize)
+                .limit(pageSize)
                 .toArray();
-            // Преобразуем каждый документ
-            return blogs.map((blog) => ({
-                id: blog._id.toString(),
-                name: blog.name,
-                description: blog.description,
-                websiteUrl: blog.websiteUrl,
-                createdAt: blog.createdAt,
-                isMembership: blog.isMembership,
-            }));
+        });
+    },
+    getBlogsCount(searchNameTerm) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const filter = {};
+            if (searchNameTerm) {
+                filter.name = { $regex: searchNameTerm, $options: 'i' };
+            }
+            return db_1.blogsCollection.countDocuments(filter);
         });
     },
     getBlog(id) {

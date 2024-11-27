@@ -1,23 +1,37 @@
 import {BlogType, BlogViewModelType} from './blogs.types';
-import {blogsCollection} from "../db/db";
+import {blogsCollection, postsCollection} from "../db/db";
 import {ObjectId} from "mongodb";
 import {ValidationError} from "../common/types/error.types";
 
 export const blogsRepository = {
-    async getAllBlogs(): Promise<BlogViewModelType[]> {
-        const blogs = await blogsCollection
-            .find({})
-            .toArray();
+    async getBlogs(
+        pageNumber: number,
+        pageSize: number,
+        sortBy,
+        sortDirection: 'asc' | 'desc',
+        searchNameTerm: string
+    ) {
+        const filter: any = {};
 
-        // Преобразуем каждый документ
-        return blogs.map((blog) => ({
-            id: blog._id.toString(),
-            name: blog.name,
-            description: blog.description,
-            websiteUrl: blog.websiteUrl,
-            createdAt: blog.createdAt,
-            isMembership: blog.isMembership,
-        }));
+        if (searchNameTerm) {
+            filter.name = {$regex: searchNameTerm, $options: 'i'}
+        }
+
+        return blogsCollection
+            .find(filter)
+            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray()
+    },
+    async getBlogsCount(searchNameTerm: string | null) {
+        const filter: any = {};
+
+        if (searchNameTerm) {
+            filter.name = {$regex: searchNameTerm, $options: 'i'}
+        }
+
+        return blogsCollection.countDocuments(filter);
     },
     async getBlog(id: string): Promise<BlogViewModelType | null> {
         // Преобразуем строку id в ObjectId
