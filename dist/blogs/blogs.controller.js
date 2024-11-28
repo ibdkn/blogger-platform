@@ -13,6 +13,7 @@ exports.blogsController = void 0;
 const blogs_repository_1 = require("./blogs.repository");
 const blogs_service_1 = require("./blogs.service");
 const pagination_helper_1 = require("../helpers/pagination.helper");
+const mongodb_1 = require("mongodb");
 exports.blogsController = {
     getBlogs(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -37,6 +38,12 @@ exports.blogsController = {
     createPost(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { blogId } = req.params;
+            if (!mongodb_1.ObjectId.isValid(blogId)) {
+                res.status(400).json({
+                    errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
+                });
+                return;
+            }
             const { title, shortDescription, content } = req.body;
             const blog = yield blogs_repository_1.blogsRepository.getBlog(blogId);
             if (!blog) {

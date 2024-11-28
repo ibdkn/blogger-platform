@@ -12,6 +12,6 @@ exports.blogsRouter = (0, express_1.Router)();
 exports.blogsRouter.get('/', blogs_controller_1.blogsController.getBlogs);
 exports.blogsRouter.get('/:id', objectId_validation_1.validateObjectId, blogs_controller_1.blogsController.getBlog);
 exports.blogsRouter.post('/', auth_middleware_1.authMiddleware, ...blogs_validation_1.validateBlogsFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.createBlog);
-exports.blogsRouter.post('/:blogId/posts', objectId_validation_1.validateObjectId, auth_middleware_1.authMiddleware, ...posts_validation_1.validatePostFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.createPost);
+exports.blogsRouter.post('/:blogId/posts', auth_middleware_1.authMiddleware, ...posts_validation_1.validatePostFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.createPost);
 exports.blogsRouter.put('/:id', auth_middleware_1.authMiddleware, objectId_validation_1.validateObjectId, ...blogs_validation_1.validateBlogsFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.updateBlog);
 exports.blogsRouter.delete('/:id', auth_middleware_1.authMiddleware, objectId_validation_1.validateObjectId, blogs_controller_1.blogsController.deleteBlog);
