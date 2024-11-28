@@ -31,10 +31,10 @@ exports.blogsService = {
             return yield blogs_repository_1.blogsRepository.getBlog(blogId);
         });
     },
-    getPostsByBlogId(pageNumber, pageSize, sortBy, sortDirection) {
+    getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection) {
         return __awaiter(this, void 0, void 0, function* () {
-            const posts = yield posts_repository_1.postsRepository.getPosts(pageNumber, pageSize, sortBy, sortDirection);
-            const postsCount = yield posts_repository_1.postsRepository.getPostsCount();
+            const posts = yield posts_repository_1.postsRepository.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
+            const postsCount = yield posts_repository_1.postsRepository.getPostsByIdCount(blogId);
             return {
                 pageCount: Math.ceil(postsCount / pageSize),
                 page: pageNumber,

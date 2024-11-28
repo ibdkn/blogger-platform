@@ -24,9 +24,24 @@ exports.postsRepository = {
                 .toArray();
         });
     },
+    getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return db_1.postsCollection
+                .find({ blogId })
+                .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+                .skip((pageNumber - 1) * pageSize)
+                .limit(pageSize)
+                .toArray();
+        });
+    },
     getPostsCount() {
         return __awaiter(this, void 0, void 0, function* () {
             return db_1.postsCollection.countDocuments({});
+        });
+    },
+    getPostsByIdCount(blogId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return db_1.postsCollection.countDocuments({ blogId });
         });
     },
     getPost(id) {

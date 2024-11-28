@@ -13,8 +13,19 @@ export const postsRepository = {
             .limit(pageSize)
             .toArray()
     },
+    async getPostsByBlogId(blogId: string, pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
+        return postsCollection
+            .find({blogId})
+            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray()
+    },
     async getPostsCount() {
         return postsCollection.countDocuments({});
+    },
+    async getPostsByIdCount(blogId) {
+        return postsCollection.countDocuments({ blogId });
     },
     async getPost(id: string): Promise<PostViewModelType | ValidationError[] | null> {
         const post = await postsCollection

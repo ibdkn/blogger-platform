@@ -19,9 +19,9 @@ export const blogsService = {
     async getBlog(blogId: string) {
         return await blogsRepository.getBlog(blogId);
     },
-    async getPostsByBlogId(pageNumber, pageSize, sortBy, sortDirection) {
-        const posts = await postsRepository.getPosts(pageNumber, pageSize, sortBy, sortDirection);
-        const postsCount = await postsRepository.getPostsCount();
+    async getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection) {
+        const posts = await postsRepository.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
+        const postsCount = await postsRepository.getPostsByIdCount(blogId);
 
         return {
             pageCount: Math.ceil(postsCount / pageSize),

@@ -8,11 +8,12 @@ const errors_result_middleware_1 = require("../common/middlewares/errors-result.
 const blogs_validation_1 = require("./blogs.validation");
 const posts_validation_1 = require("../posts/posts.validation");
 const objectId_validation_1 = require("../common/middlewares/objectId.validation");
+const blogId_validation_1 = require("../posts/blogId.validation");
 exports.blogsRouter = (0, express_1.Router)();
 exports.blogsRouter.get('/', blogs_controller_1.blogsController.getBlogs);
 exports.blogsRouter.get('/:id', objectId_validation_1.validateObjectId, blogs_controller_1.blogsController.getBlog);
-exports.blogsRouter.get('/:blogId/posts', auth_middleware_1.authMiddleware, blogs_controller_1.blogsController.getPostsByBlogId);
+exports.blogsRouter.get('/:blogId/posts', auth_middleware_1.authMiddleware, blogId_validation_1.blogIdValidate, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.getPostsByBlogId);
 exports.blogsRouter.post('/', auth_middleware_1.authMiddleware, ...blogs_validation_1.validateBlogsFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.createBlog);
-exports.blogsRouter.post('/:blogId/posts', auth_middleware_1.authMiddleware, ...posts_validation_1.validatePostFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.createPost);
+exports.blogsRouter.post('/:blogId/posts', auth_middleware_1.authMiddleware, blogId_validation_1.blogIdValidate, ...posts_validation_1.validatePostFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.createPost);
 exports.blogsRouter.put('/:id', auth_middleware_1.authMiddleware, objectId_validation_1.validateObjectId, ...blogs_validation_1.validateBlogsFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.updateBlog);
 exports.blogsRouter.delete('/:id', auth_middleware_1.authMiddleware, objectId_validation_1.validateObjectId, blogs_controller_1.blogsController.deleteBlog);

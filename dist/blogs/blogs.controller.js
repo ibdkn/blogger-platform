@@ -37,15 +37,9 @@ exports.blogsController = {
     },
     getPostsByBlogId(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { blogId } = req.body;
-            if (!mongodb_1.ObjectId.isValid(blogId)) {
-                res.status(400).json({
-                    errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
-                });
-                return;
-            }
+            const { blogId } = req.params;
             const { pageNumber, pageSize, sortBy, sortDirection, } = (0, pagination_helper_1.paginationPostQueries)(req);
-            const posts = yield blogs_service_1.blogsService.getPostsByBlogId(pageNumber, pageSize, sortBy, sortDirection);
+            const posts = yield blogs_service_1.blogsService.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
             res.status(200).json(posts);
         });
     },

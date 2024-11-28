@@ -33,14 +33,7 @@ export const blogsController = {
         res.status(200).json(blog);
     },
     async getPostsByBlogId(req: Request, res: Response): Promise<void> {
-        const { blogId } = req.body;
-
-        if (!ObjectId.isValid(blogId)) {
-            res.status(400).json({
-                errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
-            });
-            return;
-        }
+        const { blogId } = req.params;
 
         const {
             pageNumber,
@@ -49,7 +42,7 @@ export const blogsController = {
             sortDirection,
         } = paginationPostQueries(req);
 
-        const posts = await blogsService.getPostsByBlogId(pageNumber, pageSize, sortBy, sortDirection);
+        const posts = await blogsService.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
 
         res.status(200).json(posts);
     },
