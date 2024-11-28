@@ -14,36 +14,19 @@ const db_1 = require("../db/db");
 const mongodb_1 = require("mongodb");
 const blogs_repository_1 = require("../blogs/blogs.repository");
 exports.postsRepository = {
-    getAllPosts() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const posts = yield db_1.postsCollection
-                .find({})
-                .toArray();
-            // Преобразуем каждый документ
-            return posts.map((post) => ({
-                id: post._id.toString(),
-                title: post.title,
-                shortDescription: post.shortDescription,
-                content: post.content,
-                blogId: post.blogId,
-                blogName: post.blogName,
-                createdAt: post.createdAt,
-            }));
-        });
-    },
-    getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection) {
+    getPosts(pageNumber, pageSize, sortBy, sortDirection) {
         return __awaiter(this, void 0, void 0, function* () {
             return db_1.postsCollection
-                .find({ blogId }) // Фильтрация по blogId
+                .find({})
                 .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
                 .skip((pageNumber - 1) * pageSize)
                 .limit(pageSize)
                 .toArray();
         });
     },
-    getPostsCountByBlogId(blogId) {
+    getPostsCount() {
         return __awaiter(this, void 0, void 0, function* () {
-            return db_1.postsCollection.countDocuments({ blogId });
+            return db_1.postsCollection.countDocuments({});
         });
     },
     getPost(id) {

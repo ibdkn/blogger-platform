@@ -30,6 +30,5 @@ describe('DELETE /testing/all-data', () => {
             .expect(204);
 
         console.log(res.body);
-
     });
 });

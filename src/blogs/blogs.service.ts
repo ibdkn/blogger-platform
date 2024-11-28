@@ -1,15 +1,10 @@
 import {blogsRepository} from "./blogs.repository";
 import {postsRepository} from "../posts/posts.repository";
+import {BlogType} from "./blogs.types";
 
 
 export const blogsService = {
-    async getBlogs(
-        pageNumber: number,
-        pageSize: number,
-        sortBy: string,
-        sortDirection: 'asc' | 'desc',
-        searchNameTerm: string | null
-    ) {
+    async getBlogs(pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'asc' | 'desc', searchNameTerm: string | null) {
         const blogs = await blogsRepository.getBlogs(
             pageNumber,
             pageSize,
@@ -27,4 +22,28 @@ export const blogsService = {
             items: blogs
         }
     },
+    async getBlog(blogId: string) {
+        return await blogsRepository.getBlog(blogId);
+    },
+    async createPost(title: string, shortDescription: string, content: string, blogId: string, blogName: string) {
+        const post = {
+            title,
+            shortDescription,
+            content,
+            blogId,
+            blogName,
+            createdAt: new Date().toISOString(),
+        }
+
+        return postsRepository.createPost(post);
+    },
+    async createBlog(body: Omit<BlogType, 'createdAt' | 'isMembership'>) {
+        return  await blogsRepository.createBlog(body);
+    },
+    async updateBlog(id: string, body: BlogType) {
+        return await blogsRepository.updateBlog(id, body);
+    },
+    async deleteBlog(id: string) {
+        return await blogsRepository.deleteBlog(id);
+    }
 };

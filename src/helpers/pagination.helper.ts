@@ -3,7 +3,7 @@ import {Request} from "express";
 
 export const paginationQueries = (req: Request) => {
     const pageNumber: number = req.query.pageNumber ? +req.query.pageNumber : 1;
-    const pageSize: number = req.query.pageSize ? +req.query.pageNumber : 10;
+    const pageSize: number = req.query.pageSize ? +req.query.pageSize : 10;
     const sortBy: string = req.query.sortBy ? String(req.query.sortBy) : 'createdAt';
     const sortDirection: SortDirection = req.query.sortDirection && req.query.sortDirection === 'asc'
         ? 'asc'

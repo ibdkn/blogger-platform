@@ -4,13 +4,7 @@ import {ObjectId} from "mongodb";
 import {ValidationError} from "../common/types/error.types";
 
 export const blogsRepository = {
-    async getBlogs(
-        pageNumber: number,
-        pageSize: number,
-        sortBy,
-        sortDirection: 'asc' | 'desc',
-        searchNameTerm: string
-    ) {
+    async getBlogs(pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc', searchNameTerm: string | null) {
         const filter: any = {};
 
         if (searchNameTerm) {

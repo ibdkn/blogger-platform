@@ -1,42 +1,20 @@
 import {PostType, PostViewModelType, PostViewModelTypeWithoutCreatedAt} from "./posts.types";
-import {postsCollection} from "../db/db";
+import {blogsCollection, postsCollection} from "../db/db";
 import {ObjectId} from "mongodb";
 import {ValidationError} from "../common/types/error.types";
 import {blogsRepository} from "../blogs/blogs.repository";
 
 export const postsRepository = {
-    async getAllPosts(): Promise<PostViewModelTypeWithoutCreatedAt[]> {
-        const posts = await postsCollection
-            .find({})
-            .toArray();
-
-        // Преобразуем каждый документ
-        return posts.map((post) => ({
-            id: post._id.toString(),
-            title: post.title,
-            shortDescription: post.shortDescription,
-            content: post.content,
-            blogId: post.blogId,
-            blogName: post.blogName,
-            createdAt: post.createdAt,
-        }));
-    },
-    async getPostsByBlogId(
-        blogId: string,
-        pageNumber: number,
-        pageSize: number,
-        sortBy: string,
-        sortDirection: 'asc' | 'desc'
-    ) {
+    async getPosts(pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
         return postsCollection
-            .find({blogId}) // Фильтрация по blogId
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+            .find({})
+            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray();
+            .toArray()
     },
-    async getPostsCountByBlogId(blogId: string) {
-        return postsCollection.countDocuments({blogId});
+    async getPostsCount() {
+        return postsCollection.countDocuments({});
     },
     async getPost(id: string): Promise<PostViewModelType | ValidationError[] | null> {
         const post = await postsCollection

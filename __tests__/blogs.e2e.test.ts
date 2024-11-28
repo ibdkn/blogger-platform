@@ -300,7 +300,7 @@ describe('DELETE /blogs/{id}', () => {
             .expect(200);
 
         console.log(res.body);
-        expect(res.body).toEqual([]);
+        expect(res.body.items).toEqual([]);
     });
 
     it('should return 404 not found', async () => {
@@ -308,7 +308,7 @@ describe('DELETE /blogs/{id}', () => {
         const codedAuth = buff2.toString('base64');
 
         const res = await req
-            .delete(`${SETTINGS.PATH.BLOGS}/${insertedBlogId}123`)
+            .delete(`${SETTINGS.PATH.BLOGS}/6741de62723fb8e28aaddc91`)
             .set({ 'Authorization': 'Basic ' + codedAuth })
             .expect(404);
 
@@ -316,7 +316,7 @@ describe('DELETE /blogs/{id}', () => {
         expect(res.body).toHaveProperty('errorsMessages');
         expect(res.body.errorsMessages).toEqual(
             expect.arrayContaining([
-                { field: 'id', message: 'Invalid ObjectId' }
+                { field: 'id', message: 'Blog not found' }
             ])
         );
     });

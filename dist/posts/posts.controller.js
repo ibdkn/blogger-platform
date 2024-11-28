@@ -10,17 +10,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postsController = void 0;
-const posts_repository_1 = require("./posts.repository");
+const pagination_helper_1 = require("../helpers/pagination.helper");
+const posts_service_1 = require("./posts.service");
 exports.postsController = {
     getPosts(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const posts = yield posts_repository_1.postsRepository.getAllPosts();
+            const { pageNumber, pageSize, sortBy, sortDirection, } = (0, pagination_helper_1.paginationPostQueries)(req);
+            const posts = yield posts_service_1.postsService.getPosts(pageNumber, pageSize, sortBy, sortDirection);
             res.status(200).json(posts);
         });
     },
     getPost(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const post = yield posts_repository_1.postsRepository.getPost(req.params.id);
+            const { id } = req.params;
+            const post = yield posts_service_1.postsService.getPost(id);
             if (!post) {
                 res.status(404).json({
                     errorsMessages: [{ field: 'id', message: 'Post not found' }],
@@ -32,13 +35,14 @@ exports.postsController = {
     },
     createPost(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const newPost = yield posts_repository_1.postsRepository.createPost(req.body);
+            const newPost = yield posts_service_1.postsService.createPost(req.body);
             res.status(201).json(newPost);
         });
     },
     updatePost(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const errors = yield posts_repository_1.postsRepository.updatePost(req.params.id, req.body);
+            const { id } = req.params;
+            const errors = yield posts_service_1.postsService.updatePost(id, req.body);
             // Если репозиторий вернул ошибки, отправляем 404 с описанием
             if (errors) {
                 res.status(404).json({ errorsMessages: errors });
@@ -50,7 +54,8 @@ exports.postsController = {
     },
     deletePost(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const errors = yield posts_repository_1.postsRepository.deletePost(req.params.id);
+            const { id } = req.params;
+            const errors = yield posts_service_1.postsService.deletePost(id);
             // Если репозиторий вернул ошибки, отправляем 404 с описанием
             if (errors) {
                 res.status(404).json({ errorsMessages: errors });
