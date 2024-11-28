@@ -35,6 +35,20 @@ exports.blogsController = {
             res.status(200).json(blog);
         });
     },
+    getPostsByBlogId(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { blogId } = req.params;
+            if (!mongodb_1.ObjectId.isValid(blogId)) {
+                res.status(400).json({
+                    errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
+                });
+                return;
+            }
+            const { pageNumber, pageSize, sortBy, sortDirection, } = (0, pagination_helper_1.paginationPostQueries)(req);
+            const posts = yield blogs_service_1.blogsService.getPostsByBlogId(pageNumber, pageSize, sortBy, sortDirection);
+            res.status(200).json(posts);
+        });
+    },
     createPost(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { blogId } = req.params;

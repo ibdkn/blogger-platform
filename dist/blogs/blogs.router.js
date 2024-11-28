@@ -11,6 +11,7 @@ const objectId_validation_1 = require("../common/middlewares/objectId.validation
 exports.blogsRouter = (0, express_1.Router)();
 exports.blogsRouter.get('/', blogs_controller_1.blogsController.getBlogs);
 exports.blogsRouter.get('/:id', objectId_validation_1.validateObjectId, blogs_controller_1.blogsController.getBlog);
+exports.blogsRouter.get('/:blogId/posts', auth_middleware_1.authMiddleware, blogs_controller_1.blogsController.getPostsByBlogId);
 exports.blogsRouter.post('/', auth_middleware_1.authMiddleware, ...blogs_validation_1.validateBlogsFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.createBlog);
 exports.blogsRouter.post('/:blogId/posts', auth_middleware_1.authMiddleware, ...posts_validation_1.validatePostFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.createPost);
 exports.blogsRouter.put('/:id', auth_middleware_1.authMiddleware, objectId_validation_1.validateObjectId, ...blogs_validation_1.validateBlogsFields, errors_result_middleware_1.handleValidationErrors, blogs_controller_1.blogsController.updateBlog);

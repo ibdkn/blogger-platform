@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
 import {blogsRepository} from "./blogs.repository";
 import {blogsService} from "./blogs.service";
-import {paginationQueries} from "../helpers/pagination.helper";
+import {paginationPostQueries, paginationQueries} from "../helpers/pagination.helper";
 import {ObjectId} from "mongodb";
 
 export const blogsController = {
@@ -31,6 +31,27 @@ export const blogsController = {
         }
 
         res.status(200).json(blog);
+    },
+    async getPostsByBlogId(req: Request, res: Response): Promise<void> {
+        const { blogId } = req.params;
+
+        if (!ObjectId.isValid(blogId)) {
+            res.status(400).json({
+                errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
+            });
+            return;
+        }
+
+        const {
+            pageNumber,
+            pageSize,
+            sortBy,
+            sortDirection,
+        } = paginationPostQueries(req);
+
+        const posts = await blogsService.getPostsByBlogId(pageNumber, pageSize, sortBy, sortDirection);
+
+        res.status(200).json(posts);
     },
     async createPost(req: Request, res: Response){
         const { blogId } = req.params;
