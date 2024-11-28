@@ -37,7 +37,7 @@ exports.blogsController = {
     },
     getPostsByBlogId(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { blogId } = req.params;
+            const { blogId } = req.body;
             if (!mongodb_1.ObjectId.isValid(blogId)) {
                 res.status(400).json({
                     errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],

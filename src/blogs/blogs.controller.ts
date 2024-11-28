@@ -33,7 +33,7 @@ export const blogsController = {
         res.status(200).json(blog);
     },
     async getPostsByBlogId(req: Request, res: Response): Promise<void> {
-        const { blogId } = req.params;
+        const { blogId } = req.body;
 
         if (!ObjectId.isValid(blogId)) {
             res.status(400).json({
