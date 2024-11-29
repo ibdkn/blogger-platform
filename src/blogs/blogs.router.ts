@@ -4,7 +4,6 @@ import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {handleValidationErrors} from "../common/middlewares/errors-result.middleware";
 import {validateBlogsFields} from "./blogs.validation";
 import {validatePostFields} from "../posts/posts.validation";
-import {validateObjectId} from "../common/middlewares/objectId.validation";
 
 export const blogsRouter = Router();
 
