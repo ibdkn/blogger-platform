@@ -13,9 +13,6 @@ export const blogsController = {
             searchNameTerm,
         } = paginationQueries(req);
 
-        console.log(req.query);
-        console.log(paginationPostQueries(req));
-
         const blogs = await blogsService.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm)
 
         res.status(200).json(blogs);
