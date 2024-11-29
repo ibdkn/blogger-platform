@@ -2,6 +2,7 @@ import {blogsRepository} from "./blogs.repository";
 import {postsRepository} from "../posts/posts.repository";
 import {BlogType} from "./blogs.types";
 import {PostType} from "../posts/posts.types";
+import {ObjectId} from "mongodb";
 
 
 export const blogsService = {
@@ -33,6 +34,13 @@ export const blogsService = {
         }
     },
     async createPost(blogId: string, body: Omit<PostType, 'blogId' | 'blogName' | 'isMembership'>) {
+        if (!ObjectId.isValid(blogId)) {
+            throw {
+                status: 400,
+                errorsMessages: [{ field: 'blogId', message: 'Invalid ObjectId' }]
+            };
+        }
+
         // Проверяем существование блога
         const blog = await blogsRepository.getBlog(blogId);
 
