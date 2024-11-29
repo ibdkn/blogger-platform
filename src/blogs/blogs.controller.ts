@@ -13,6 +13,9 @@ export const blogsController = {
             searchNameTerm = null,
         } = paginationQueries(req);
 
+        console.log(req.query);
+        console.log(paginationPostQueries(req));
+
         const blogs = await blogsService.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm)
 
         res.status(200).json(blogs);
@@ -33,22 +36,38 @@ export const blogsController = {
     },
     async getPostsByBlogId(req: Request, res: Response): Promise<void> {
         const { blogId } = req.params;
-        const { pageNumber = 1, pageSize = 10, sortBy = 'createdAt', sortDirection = 'desc' } = paginationPostQueries(req);
 
-        console.log('Request params:', { blogId, pageNumber, pageSize, sortBy, sortDirection });
+        if (!ObjectId.isValid(blogId)) {
+            res.status(400).json({
+                errorsMessages: [{field: 'blogId', message: 'Invalid ObjectId'}]
+            });
+            return;
+        }
 
         const blog = await blogsService.getBlog(blogId);
 
         if (!blog) {
             res.status(404).json({
-                errorsMessages: [{ field: 'id', message: 'Blog not found' }],
+                errorsMessages: [{field: 'id', message: 'Blog not found'}]
             });
             return;
         }
 
+        const {
+            pageNumber = 1,
+            pageSize = 10,
+            sortBy = 'createdAt',
+            sortDirection = 'desc',
+        } = paginationPostQueries(req);
+
         const posts = await blogsService.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
 
-        console.log('Returned posts:', posts);
+        if (!posts) {
+            res.status(404).json({
+                errorsMessages: [{field: 'id', message: 'Post not found'}]
+            });
+            return;
+        }
 
         res.status(200).json(posts);
     },
