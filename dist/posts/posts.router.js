@@ -11,6 +11,6 @@ const objectId_validation_1 = require("../common/middlewares/objectId.validation
 exports.postsRouter = (0, express_1.Router)();
 exports.postsRouter.get('/', posts_controller_1.postsController.getPosts);
 exports.postsRouter.get('/:id', objectId_validation_1.validateObjectId, posts_controller_1.postsController.getPost);
-exports.postsRouter.post('/', auth_middleware_1.authMiddleware, blogId_validation_1.blogIdValidate, ...posts_validation_1.validatePostFields, errors_result_middleware_1.handleValidationErrors, posts_controller_1.postsController.createPost);
-exports.postsRouter.put('/:id', auth_middleware_1.authMiddleware, objectId_validation_1.validateObjectId, blogId_validation_1.blogIdValidate, ...posts_validation_1.validatePostFields, errors_result_middleware_1.handleValidationErrors, posts_controller_1.postsController.updatePost);
+exports.postsRouter.post('/', auth_middleware_1.authMiddleware, blogId_validation_1.blogIdBodyValidate, ...posts_validation_1.validatePostFields, errors_result_middleware_1.handleValidationErrors, posts_controller_1.postsController.createPost);
+exports.postsRouter.put('/:id', auth_middleware_1.authMiddleware, objectId_validation_1.validateObjectId, blogId_validation_1.blogIdBodyValidate, ...posts_validation_1.validatePostFields, errors_result_middleware_1.handleValidationErrors, posts_controller_1.postsController.updatePost);
 exports.postsRouter.delete('/:id', auth_middleware_1.authMiddleware, objectId_validation_1.validateObjectId, posts_controller_1.postsController.deletePost);

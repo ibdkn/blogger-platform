@@ -1,6 +1,7 @@
 import {blogsRepository} from "./blogs.repository";
 import {postsRepository} from "../posts/posts.repository";
 import {BlogType} from "./blogs.types";
+import {PostType} from "../posts/posts.types";
 
 
 export const blogsService = {
@@ -31,16 +32,22 @@ export const blogsService = {
             items: posts
         }
     },
-    async createPost(title: string, shortDescription: string, content: string, blogId: string, blogName: string) {
-        const post = {
-            title,
-            shortDescription,
-            content,
-            blogId,
-            blogName,
-            createdAt: new Date().toISOString(),
+    async createPost(blogId: string, body: Omit<PostType, 'blogId' | 'blogName' | 'isMembership'>) {
+        // Проверяем существование блога
+        const blog = await blogsRepository.getBlog(blogId);
+        if (!blog) {
+            throw new Error('Blog not found');
         }
 
+        // Формируем данные для поста
+        const post = {
+            ...body,
+            blogId,
+            blogName: blog.name,
+            createdAt: new Date().toISOString(),
+        };
+
+        // Сохраняем пост
         return postsRepository.createPost(post);
     },
     async createBlog(body: Omit<BlogType, 'createdAt' | 'isMembership'>) {

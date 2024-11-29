@@ -47,26 +47,7 @@ export const blogsController = {
         res.status(200).json(posts);
     },
     async createPost(req: Request, res: Response){
-        const { blogId } = req.params;
-
-        if (!ObjectId.isValid(blogId)) {
-            res.status(400).json({
-                errorsMessages: [{ field: 'id', message: 'Invalid ObjectId' }],
-            });
-            return;
-        }
-
-        const { title, shortDescription, content } = req.body;
-
-        const blog = await blogsRepository.getBlog(blogId);
-        if (!blog) {
-            res.status(404).json({
-                errorsMessages: [{field: 'id', message: 'Blog not found'}]
-            });
-            return;
-        }
-
-        const newPost = await blogsService.createPost(title, shortDescription, content, blogId, blog.name);
+        const newPost = await blogsService.createPost(req.params.id, req.body);
 
         res.status(201).json(newPost);
     },

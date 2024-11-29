@@ -46,38 +46,17 @@ export const postsRepository = {
             return null;
         }
     },
-    async createPost(body: Omit<PostType, 'blogName' | 'isMembership'>) {
-        const blog = await blogsRepository.getBlog(body.blogId);
+    async createPost(post: PostType) {
+        const result = await postsCollection.insertOne(post);
 
-        // Если пост не найден, возвращаем массив ошибок
-        if (!blog) return [{field: 'id', message: 'Blog not found'}];
-
-        const post = {
-            title: body.title,
-            shortDescription: body.shortDescription,
-            content: body.content,
-            blogId: body.blogId,
-            blogName: blog.name,
-            createdAt: new Date().toISOString(),
+        if (!result.acknowledged) {
+            throw new Error('Failed to create a post');
         }
 
-        const result = await postsCollection
-            .insertOne(post);
-
-        // Проверяем, что вставка прошла успешно, и формируем объект результата
-        if (result.acknowledged) {
-            return {
-                id: result.insertedId.toString(), // Преобразуем _id в строку
-                title: post.title,
-                shortDescription: post.shortDescription,
-                content: post.content,
-                blogId: post.blogId,
-                blogName: post.blogName,
-                createdAt: post.createdAt,
-            };
-        } else {
-            throw new Error('Failed to create a blog');
-        }
+        return {
+            id: result.insertedId.toString(),
+            ...post,
+        };
     },
     async updatePost(id: string, body: PostType): Promise<ValidationError[] | void> {
         const post = await this.getPost(id);
