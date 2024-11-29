@@ -12,12 +12,25 @@ export const blogsRepository = {
             filter.name = {$regex: searchNameTerm, $options: 'i'}
         }
 
-        return blogsCollection
+        const blogs = await blogsCollection
             .find(filter)
             .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray()
+            .toArray();
+
+        if (blogs) {
+            return blogs.map(blog => ({
+                id: blog._id.toString(),
+                name: blog.name,
+                description: blog.description,
+                websiteUrl: blog.websiteUrl,
+                createdAt: blog.createdAt,
+                isMembership: blog.isMembership,
+            }));
+        } else {
+            return null;
+        }
     },
     async getBlogsCount(searchNameTerm: string | null) {
         const filter: any = {};
@@ -26,7 +39,7 @@ export const blogsRepository = {
             filter.name = {$regex: searchNameTerm, $options: 'i'}
         }
 
-        return blogsCollection.countDocuments(filter);
+        return await blogsCollection.countDocuments(filter);
     },
     async getBlog(id: string): Promise<BlogViewModelType | null> {
         // Преобразуем строку id в ObjectId

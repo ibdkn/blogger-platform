@@ -6,26 +6,56 @@ import {blogsRepository} from "../blogs/blogs.repository";
 
 export const postsRepository = {
     async getPosts(pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
-        return postsCollection
+        const posts = await postsCollection
             .find({})
-            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray()
+            .toArray();
+
+        if (posts) {
+            // Преобразуем _id в id и возвращаем нужный формат
+            return posts.map(post => ({
+                id: post._id.toString(),
+                title: post.title,
+                shortDescription: post.shortDescription,
+                content: post.content,
+                blogId: post.blogId,
+                blogName: post.blogName,
+                createdAt: post.createdAt,
+            }));
+        } else {
+            return null;
+        }
     },
     async getPostsByBlogId(blogId: string, pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
-        return postsCollection
+        const posts = await postsCollection
             .find({blogId})
-            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray()
+            .toArray();
+
+        if (posts) {
+            // Преобразуем _id в id и возвращаем нужный формат
+            return posts.map(post => ({
+                id: post._id.toString(),
+                title: post.title,
+                shortDescription: post.shortDescription,
+                content: post.content,
+                blogId: post.blogId,
+                blogName: post.blogName,
+                createdAt: post.createdAt,
+            }));
+        } else {
+            return null;
+        }
     },
     async getPostsCount() {
-        return postsCollection.countDocuments({});
+        return await postsCollection.countDocuments({});
     },
     async getPostsByIdCount(blogId: string) {
-        return postsCollection.countDocuments({ blogId });
+        return await postsCollection.countDocuments({blogId});
     },
     async getPost(id: string): Promise<PostViewModelType | ValidationError[] | null> {
         const post = await postsCollection
