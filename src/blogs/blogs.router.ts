@@ -5,7 +5,7 @@ import {handleValidationErrors} from "../common/middlewares/errors-result.middle
 import {validateBlogsFields} from "./blogs.validation";
 import {validatePostFields} from "../posts/posts.validation";
 import {validateObjectId} from "../common/middlewares/objectId.validation";
-import {blogIdBodyValidate, blogIdParamValidate} from "../posts/blogId.validation";
+import {blogIdParamValidate} from "../posts/blogId.validation";
 
 export const blogsRouter = Router();
 

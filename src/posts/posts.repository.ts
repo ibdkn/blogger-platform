@@ -24,7 +24,7 @@ export const postsRepository = {
     async getPostsCount() {
         return postsCollection.countDocuments({});
     },
-    async getPostsByIdCount(blogId) {
+    async getPostsByIdCount(blogId: string) {
         return postsCollection.countDocuments({ blogId });
     },
     async getPost(id: string): Promise<PostViewModelType | ValidationError[] | null> {

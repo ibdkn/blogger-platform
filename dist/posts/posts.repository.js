@@ -65,37 +65,13 @@ exports.postsRepository = {
             }
         });
     },
-    createPost(body) {
+    createPost(post) {
         return __awaiter(this, void 0, void 0, function* () {
-            const blog = yield blogs_repository_1.blogsRepository.getBlog(body.blogId);
-            // Если пост не найден, возвращаем массив ошибок
-            if (!blog)
-                return [{ field: 'id', message: 'Blog not found' }];
-            const post = {
-                title: body.title,
-                shortDescription: body.shortDescription,
-                content: body.content,
-                blogId: body.blogId,
-                blogName: blog.name,
-                createdAt: new Date().toISOString(),
-            };
-            const result = yield db_1.postsCollection
-                .insertOne(post);
-            // Проверяем, что вставка прошла успешно, и формируем объект результата
-            if (result.acknowledged) {
-                return {
-                    id: result.insertedId.toString(), // Преобразуем _id в строку
-                    title: post.title,
-                    shortDescription: post.shortDescription,
-                    content: post.content,
-                    blogId: post.blogId,
-                    blogName: post.blogName,
-                    createdAt: post.createdAt,
-                };
+            const result = yield db_1.postsCollection.insertOne(post);
+            if (!result.acknowledged) {
+                throw new Error('Failed to create a post');
             }
-            else {
-                throw new Error('Failed to create a blog');
-            }
+            return Object.assign({ id: result.insertedId.toString() }, post);
         });
     },
     updatePost(id, body) {

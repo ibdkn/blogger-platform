@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postsService = void 0;
 const posts_repository_1 = require("./posts.repository");
+const blogs_repository_1 = require("../blogs/blogs.repository");
 exports.postsService = {
     getPosts(pageNumber, pageSize, sortBy, sortDirection) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -32,7 +33,14 @@ exports.postsService = {
     },
     createPost(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield posts_repository_1.postsRepository.createPost(body);
+            // Проверяем существование блога
+            const blog = yield blogs_repository_1.blogsRepository.getBlog(body.blogId);
+            if (!blog) {
+                throw new Error('Blog not found');
+            }
+            // Формируем данные для поста
+            const post = Object.assign(Object.assign({}, body), { blogId: blog.id, blogName: blog.name, createdAt: new Date().toISOString() });
+            return yield posts_repository_1.postsRepository.createPost(post);
         });
     },
     updatePost(id, body) {

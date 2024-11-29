@@ -44,16 +44,16 @@ exports.blogsService = {
             };
         });
     },
-    createPost(title, shortDescription, content, blogId, blogName) {
+    createPost(blogId, body) {
         return __awaiter(this, void 0, void 0, function* () {
-            const post = {
-                title,
-                shortDescription,
-                content,
-                blogId,
-                blogName,
-                createdAt: new Date().toISOString(),
-            };
+            // Проверяем существование блога
+            const blog = yield blogs_repository_1.blogsRepository.getBlog(blogId);
+            if (!blog) {
+                throw new Error('Blog not found');
+            }
+            // Формируем данные для поста
+            const post = Object.assign(Object.assign({}, body), { blogId, blogName: blog.name, createdAt: new Date().toISOString() });
+            // Сохраняем пост
             return posts_repository_1.postsRepository.createPost(post);
         });
     },
