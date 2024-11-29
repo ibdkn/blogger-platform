@@ -37,7 +37,12 @@ export const blogsService = {
         const blog = await blogsRepository.getBlog(blogId);
 
         // Если пост не найден, возвращаем массив ошибок
-        if (!blog) return [{field: 'id', message: 'Blog not found'}];
+        if (!blog) {
+            throw {
+                status: 404,
+                errorsMessages: [{ field: 'id', message: 'Blog not found' }]
+            };
+        }
 
         // Формируем данные для поста
         const post = {
@@ -48,7 +53,7 @@ export const blogsService = {
         };
 
         // Сохраняем пост
-        return blogsRepository.createPostForSpecificBlog(post);
+        return await blogsRepository.createPostForSpecificBlog(post);
     },
     async createBlog(body: Omit<BlogType, 'createdAt' | 'isMembership'>) {
         return await blogsRepository.createBlog(body);

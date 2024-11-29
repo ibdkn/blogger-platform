@@ -61,12 +61,20 @@ export const blogsController = {
         res.status(200).json(posts);
     },
     async createPost(req: Request, res: Response){
-        const newPost = await blogsService.createPost(req.params.id, req.body);
-
-        res.status(201).json(newPost);
+        try {
+            const newPost = await blogsService.createPost(req.params.blogId, req.body);
+            res.status(201).json(newPost);
+        } catch (error) {
+            if (error.status) {
+                res.status(error.status).json({ errorsMessages: error.errorsMessages });
+            } else {
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        }
     },
     async createBlog(req: Request, res: Response): Promise<void> {
         const newBlog = await blogsService.createBlog(req.body);
+
         res.status(201).json(newBlog);
     },
     async updateBlog(req: Request, res: Response): Promise<void> {
