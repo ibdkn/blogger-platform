@@ -48,7 +48,7 @@ export const blogsService = {
         if (!blog) {
             throw {
                 status: 404,
-                errorsMessages: [{ field: 'id', message: 'Blog not found' }]
+                errorsMessages: [{ field: 'blogId', message: 'Blog not found' }]
             };
         }
 
