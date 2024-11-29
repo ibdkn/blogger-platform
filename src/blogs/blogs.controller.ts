@@ -8,9 +8,9 @@ export const blogsController = {
         const {
             pageNumber = 1,
             pageSize = 10,
-            sortBy=  'createdAt',
+            sortBy = 'createdAt',
             sortDirection = 'desc',
-            searchNameTerm = null
+            searchNameTerm = null,
         } = paginationQueries(req);
 
         const blogs = await blogsService.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm)
