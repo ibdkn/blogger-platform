@@ -51,10 +51,10 @@ export const blogsController = {
         }
 
         const {
-            pageNumber,
-            pageSize,
-            sortBy,
-            sortDirection,
+            pageNumber = 1,
+            pageSize = 10,
+            sortBy = 'createdAt',
+            sortDirection = 'desc',
         } = paginationPostQueries(req);
 
         const posts = await blogsService.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
