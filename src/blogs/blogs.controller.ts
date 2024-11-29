@@ -1,8 +1,6 @@
 import {Request, Response} from "express";
-import {blogsRepository} from "./blogs.repository";
 import {blogsService} from "./blogs.service";
 import {paginationPostQueries, paginationQueries} from "../helpers/pagination.helper";
-import {ObjectId} from "mongodb";
 
 export const blogsController = {
     async getBlogs(req: Request, res: Response): Promise<void> {
@@ -35,6 +33,15 @@ export const blogsController = {
     async getPostsByBlogId(req: Request, res: Response): Promise<void> {
         const { blogId } = req.params;
 
+        const blog = await blogsService.getBlog(blogId);
+
+        if (!blog) {
+            res.status(404).json({
+                errorsMessages: [{field: 'id', message: 'Blog not found'}]
+            });
+            return;
+        }
+
         const {
             pageNumber,
             pageSize,
@@ -43,6 +50,13 @@ export const blogsController = {
         } = paginationPostQueries(req);
 
         const posts = await blogsService.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
+
+        if (!posts) {
+            res.status(404).json({
+                errorsMessages: [{field: 'id', message: 'Post not found'}]
+            });
+            return;
+        }
 
         res.status(200).json(posts);
     },

@@ -31,7 +31,6 @@ export const postsController = {
     },
     async createPost(req: Request, res: Response): Promise<void> {
         const newPost = await postsService.createPost(req.body);
-
         res.status(201).json(newPost);
     },
     async updatePost(req: Request, res: Response): Promise<void> {

@@ -1,6 +1,5 @@
 import {postsRepository} from "./posts.repository";
 import {PostType} from "./posts.types";
-import {blogsRepository} from "../blogs/blogs.repository";
 
 export const postsService = {
     async getPosts(pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'asc' | 'desc') {
@@ -24,20 +23,7 @@ export const postsService = {
         return await postsRepository.getPost(id);
     },
     async createPost(body: Omit<PostType, 'blogName' | 'isMembership'>) {
-        // Проверяем существование блога
-        const blog = await blogsRepository.getBlog(body.blogId);
-        if (!blog) {
-            throw new Error('Blog not found');
-        }
-
-        // Формируем данные для поста
-        const post = {
-            ...body,
-            blogId: blog.id,
-            blogName: blog.name,
-            createdAt: new Date().toISOString(),
-        };
-        return await postsRepository.createPost(post);
+        return await postsRepository.createPost(body);
     },
     async updatePost(id: string, body: PostType) {
         return postsRepository.updatePost(id, body);

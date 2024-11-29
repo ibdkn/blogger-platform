@@ -2,6 +2,7 @@ import {BlogType, BlogViewModelType} from './blogs.types';
 import {blogsCollection, postsCollection} from "../db/db";
 import {ObjectId} from "mongodb";
 import {ValidationError} from "../common/types/error.types";
+import {PostType} from "../posts/posts.types";
 
 export const blogsRepository = {
     async getBlogs(pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc', searchNameTerm: string | null) {
@@ -67,6 +68,25 @@ export const blogsRepository = {
                 websiteUrl: blog.websiteUrl,
                 createdAt: blog.createdAt,
                 isMembership: blog.isMembership
+            };
+        } else {
+            throw new Error('Failed to create a blog');
+        }
+    },
+    async createPostForSpecificBlog(post: PostType) {
+        const result = await postsCollection
+            .insertOne(post);
+
+        // Проверяем, что вставка прошла успешно, и формируем объект результата
+        if (result.acknowledged) {
+            return {
+                id: result.insertedId.toString(), // Преобразуем _id в строку
+                title: post.title,
+                shortDescription: post.shortDescription,
+                content: post.content,
+                blogId: post.blogId,
+                blogName: post.blogName,
+                createdAt: post.createdAt,
             };
         } else {
             throw new Error('Failed to create a blog');
