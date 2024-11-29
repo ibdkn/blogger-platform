@@ -6,11 +6,11 @@ import {ObjectId} from "mongodb";
 export const blogsController = {
     async getBlogs(req: Request, res: Response): Promise<void> {
         const {
-            pageNumber,
-            pageSize,
-            sortBy,
-            sortDirection,
-            searchNameTerm
+            pageNumber = 1,
+            pageSize = 10,
+            sortBy=  'createdAt',
+            sortDirection = 'desc',
+            searchNameTerm = null
         } = paginationQueries(req);
 
         const blogs = await blogsService.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm)
