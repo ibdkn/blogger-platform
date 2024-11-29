@@ -8,7 +8,7 @@ export const postsRepository = {
     async getPosts(pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
         const posts = await postsCollection
             .find({})
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray();
@@ -31,7 +31,7 @@ export const postsRepository = {
     async getPostsByBlogId(blogId: string, pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
         const posts = await postsCollection
             .find({blogId})
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray();
