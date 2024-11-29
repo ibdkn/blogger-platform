@@ -33,38 +33,22 @@ export const blogsController = {
     },
     async getPostsByBlogId(req: Request, res: Response): Promise<void> {
         const { blogId } = req.params;
+        const { pageNumber = 1, pageSize = 10, sortBy = 'createdAt', sortDirection = 'desc' } = paginationPostQueries(req);
 
-        if (!ObjectId.isValid(blogId)) {
-            res.status(400).json({
-                errorsMessages: [{field: 'blogId', message: 'Invalid ObjectId'}]
-            });
-            return;
-        }
+        console.log('Request params:', { blogId, pageNumber, pageSize, sortBy, sortDirection });
 
         const blog = await blogsService.getBlog(blogId);
 
         if (!blog) {
             res.status(404).json({
-                errorsMessages: [{field: 'id', message: 'Blog not found'}]
+                errorsMessages: [{ field: 'id', message: 'Blog not found' }],
             });
             return;
         }
-
-        const {
-            pageNumber = 1,
-            pageSize = 10,
-            sortBy = 'createdAt',
-            sortDirection = 'desc',
-        } = paginationPostQueries(req);
 
         const posts = await blogsService.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
 
-        if (!posts) {
-            res.status(404).json({
-                errorsMessages: [{field: 'id', message: 'Post not found'}]
-            });
-            return;
-        }
+        console.log('Returned posts:', posts);
 
         res.status(200).json(posts);
     },

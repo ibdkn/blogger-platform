@@ -1,8 +1,8 @@
 import {blogsRepository} from "./blogs.repository";
-import {postsRepository} from "../posts/posts.repository";
 import {BlogType} from "./blogs.types";
 import {PostType} from "../posts/posts.types";
 import {ObjectId} from "mongodb";
+import {postsCollection} from "../db/db";
 
 
 export const blogsService = {
@@ -22,16 +22,30 @@ export const blogsService = {
         return await blogsRepository.getBlog(blogId);
     },
     async getPostsByBlogId(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'asc' | 'desc') {
-        const posts = await postsRepository.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
-        const postsCount = await postsRepository.getPostsByIdCount(blogId);
+        const posts = await postsCollection
+            .find({ blogId })
+            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray();
+
+        const totalCount = await postsCollection.countDocuments({ blogId });
 
         return {
-            pageCount: Math.ceil(postsCount / pageSize),
+            pageCount: Math.ceil(totalCount / pageSize),
             page: pageNumber,
             pageSize,
-            totalCount: postsCount,
-            items: posts
-        }
+            totalCount,
+            items: posts.map(post => ({
+                id: post._id.toString(),
+                title: post.title,
+                shortDescription: post.shortDescription,
+                content: post.content,
+                blogId: post.blogId,
+                blogName: post.blogName,
+                createdAt: post.createdAt,
+            })),
+        };
     },
     async createPost(blogId: string, body: Omit<PostType, 'blogId' | 'blogName' | 'isMembership'>) {
         if (!ObjectId.isValid(blogId)) {
