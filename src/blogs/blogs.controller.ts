@@ -57,6 +57,9 @@ export const blogsController = {
             sortDirection,
         } = paginationPostQueries(req);
 
+        console.log(req.query)
+        console.log({pageNumber, pageSize, sortBy, sortDirection})
+
         const posts = await blogsService.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
 
         if (!posts) {
