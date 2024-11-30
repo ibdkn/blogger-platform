@@ -8,7 +8,7 @@ export const postsRepository = {
     async getPosts(pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
         const posts = await postsCollection
             .find({})
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
+            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray();
