@@ -5,12 +5,12 @@ import {ValidationError} from "../common/types/error.types";
 import {blogsRepository} from "../blogs/blogs.repository";
 
 export const postsRepository = {
-    async getPosts(pageNumber: number, pagesSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
+    async getPosts(pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
         const posts = await postsCollection
             .find({})
             .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
-            .skip((pageNumber - 1) * pagesSize)
-            .limit(pagesSize)
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
             .toArray();
 
         if (posts) {
@@ -28,12 +28,12 @@ export const postsRepository = {
             return null;
         }
     },
-    async getPostsByBlogId(blogId: string, pageNumber: number, pagesSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
+    async getPostsByBlogId(blogId: string, pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
         const posts = await postsCollection
             .find({blogId})
             .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
-            .skip((pageNumber - 1) * pagesSize)
-            .limit(pagesSize)
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
             .toArray();
 
         if (posts) {

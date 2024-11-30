@@ -5,7 +5,7 @@ import {ValidationError} from "../common/types/error.types";
 import {PostType} from "../posts/posts.types";
 
 export const blogsRepository = {
-    async getBlogs(pageNumber: number, pagesSize: number, sortBy: string, sortDirection: 'asc' | 'desc', searchNameTerm: string | null) {
+    async getBlogs(pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'asc' | 'desc', searchNameTerm: string | null) {
         const filter: any = {};
 
         if (searchNameTerm) {
@@ -15,8 +15,8 @@ export const blogsRepository = {
         const blogs = await blogsCollection
             .find(filter)
             .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-            .skip((pageNumber - 1) * pagesSize)
-            .limit(pagesSize)
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
             .toArray();
 
         if (blogs) {

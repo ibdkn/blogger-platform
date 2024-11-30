@@ -2,19 +2,19 @@ import {postsRepository} from "./posts.repository";
 import {PostType} from "./posts.types";
 
 export const postsService = {
-    async getPosts(pageNumber: number, pagesSize: number, sortBy: string, sortDirection: 'asc' | 'desc') {
+    async getPosts(pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'asc' | 'desc') {
         const posts = await postsRepository.getPosts(
             pageNumber,
-            pagesSize,
+            pageSize,
             sortBy,
             sortDirection
         );
         const postsCount = await postsRepository.getPostsCount();
 
         return {
-            pageCount: Math.ceil(postsCount / pagesSize),
+            pagesCount: Math.ceil(postsCount / pageSize),
             page: pageNumber,
-            pagesSize,
+            pageSize,
             totalCount: postsCount,
             items: posts
         }
