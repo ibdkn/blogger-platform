@@ -5,6 +5,15 @@ import {ObjectId} from "mongodb";
 
 export const blogsController = {
     async getBlogs(req: Request, res: Response): Promise<void> {
+        // Явно устанавливаем параметры в req.query
+        req.query = {
+            pageNumber: req.query.pageNumber || 'null',
+            pageSize: req.query.pageSize || 'null',
+            sortBy: req.query.sortBy || 'null',
+            sortDirection: req.query.sortDirection || 'null',
+            searchNameTerm: req.query.searchNameTerm || 'null',
+        };
+
         const {
             pageNumber,
             pageSize,
