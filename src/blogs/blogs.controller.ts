@@ -1,6 +1,6 @@
 import {Request, Response} from "express";
 import {blogsService} from "./blogs.service";
-import {paginationPostQueries, paginationQueries} from "../helpers/pagination.helper";
+import {paginationQueries} from "../helpers/pagination.helper";
 import {ObjectId} from "mongodb";
 
 export const blogsController = {
@@ -55,7 +55,7 @@ export const blogsController = {
             pageSize,
             sortBy,
             sortDirection,
-        } = paginationPostQueries(req);
+        } = paginationQueries(req);
 
         console.log(req.query)
         console.log({pageNumber, pageSize, sortBy, sortDirection})

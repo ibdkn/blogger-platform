@@ -1,6 +1,6 @@
 import {Request, Response} from "express";
-import {paginationPostQueries} from "../helpers/pagination.helper";
 import {postsService} from "./posts.service";
+import {paginationQueries} from "../helpers/pagination.helper";
 
 export const postsController = {
     async getPosts(req: Request, res: Response): Promise<void> {
@@ -9,7 +9,7 @@ export const postsController = {
             pageSize,
             sortBy,
             sortDirection,
-        } = paginationPostQueries(req);
+        } = paginationQueries(req);
 
         const posts = await postsService.getPosts(pageNumber, pageSize, sortBy, sortDirection);
         res.status(200).json(posts);
