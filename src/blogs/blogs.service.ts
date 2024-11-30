@@ -1,75 +1,144 @@
 import {blogsRepository} from "./blogs.repository";
 import {postsRepository} from "../posts/posts.repository";
-import {BlogType} from "./blogs.types";
+import {BlogType, BlogViewModelType} from "./blogs.types";
 import {PostType} from "../posts/posts.types";
-import {ObjectId} from "mongodb";
+import {ObjectId, WithId} from "mongodb";
+import {PaginatedResult} from "../common/types/pagination.types";
 
 
 export const blogsService = {
-    async getBlogs(pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'asc' | 'desc', searchNameTerm: string | null) {
-        const blogs = await blogsRepository.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm);
-        const blogsCount = await blogsRepository.getBlogsCount(searchNameTerm);
+    async getBlogs(
+        pageNumber: number,
+        pageSize: number,
+        sortBy: string,
+        sortDirection: 'asc' | 'desc',
+        searchNameTerm: string | null
+    ): Promise<PaginatedResult<BlogViewModelType>> {
+        // Fetch paginated and sorted blogs from the repository
+        const blogs: WithId<BlogType>[] = await blogsRepository.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm);
+        // Get the total count of blogs matching the filter
+        const blogsCount: number = await blogsRepository.getBlogsCount(searchNameTerm);
 
+        if (!blogs) {
+            return {
+                pagesCount: 0,
+                page: pageNumber,
+                pageSize,
+                totalCount: 0,
+                items: []
+            }
+        }
+
+        const transformedBlogs: BlogViewModelType[] = blogs.map(blog => ({
+            id: blog._id.toString(), // Convert ObjectId to string
+            name: blog.name,
+            description: blog.description,
+            websiteUrl: blog.websiteUrl,
+            createdAt: blog.createdAt,
+            isMembership: blog.isMembership,
+        }));
+
+        // Return paginated result including page info and blog items
         return {
             pagesCount: Math.ceil(blogsCount / pageSize),
             page: pageNumber,
             pageSize,
             totalCount: blogsCount,
-            items: blogs
+            items: transformedBlogs
         }
     },
     async getBlog(blogId: string) {
-        return await blogsRepository.getBlog(blogId);
-    },
-    async getPostsByBlogId(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'asc' | 'desc') {
-        const posts = await postsRepository.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
-        const postsCount = await postsRepository.getPostsByIdCount(blogId);
-
-        return {
-            pagesCount: Math.ceil(postsCount / pageSize),
-            page: pageNumber,
-            pageSize,
-            totalCount: postsCount,
-            items: posts
-        }
-    },
-    async createPost(blogId: string, body: Omit<PostType, 'blogId' | 'blogName' | 'isMembership'>) {
-        if (!ObjectId.isValid(blogId)) {
-            throw {
-                status: 400,
-                errorsMessages: [{ field: 'blogId', message: 'Invalid ObjectId' }]
-            };
-        }
-
-        // Проверяем существование блога
+        // Fetch a single blog by its ID from the repository
         const blog = await blogsRepository.getBlog(blogId);
 
-        // Если пост не найден, возвращаем массив ошибок
+        // Throw an error if the blog is not found
         if (!blog) {
             throw {
                 status: 404,
-                errorsMessages: [{ field: 'blogId', message: 'Blog not found' }]
+                errorsMessages: [{ message: 'Blog not found' }]
             };
         }
 
-        // Формируем данные для поста
-        const post = {
-            ...body,
-            blogId,
-            blogName: blog.name,
+        return blog;
+    },
+    async createBlog(body: Omit<BlogType, 'createdAt' | 'isMembership'>): Promise<BlogViewModelType> {
+        // Prepare the blog object for insertion
+        const newBlog = {
+            name: body.name,
+            description: body.description,
+            websiteUrl: body.websiteUrl,
             createdAt: new Date().toISOString(),
-        };
+            isMembership: false
+        }
 
-        // Сохраняем пост
-        return await blogsRepository.createPostForSpecificBlog(post);
+        const result = await blogsRepository.createBlog(newBlog);
+
+        if (result.acknowledged) {
+            // Return the result in the desired format
+            return {
+                id: result.insertedId.toString(), // Convert ObjectId to string
+                name: newBlog.name,
+                description: newBlog.description,
+                websiteUrl: newBlog.websiteUrl,
+                createdAt: newBlog.createdAt,
+                isMembership: newBlog.isMembership
+            };
+        } else {
+            throw {
+                status: 500,
+                errorsMessages: [{ message: 'Failed to create a blog' }]
+            };
+        }
     },
-    async createBlog(body: Omit<BlogType, 'createdAt' | 'isMembership'>) {
-        return await blogsRepository.createBlog(body);
-    },
-    async updateBlog(id: string, body: BlogType) {
-        return await blogsRepository.updateBlog(id, body);
+    async updateBlog(id: string, body: Omit<BlogType, 'createdAt' | 'isMembership'>) {
+        // Fetch a single blog by its ID from the repository
+        const blog = await blogsRepository.getBlog(id);
+
+        // Throw an error if the blog is not found
+        if (!blog) {
+            throw {
+                status: 404,
+                errorsMessages: [{ message: 'Blog not found' }]
+            };
+        }
+
+        // Prepare the fields to update in the blog
+        const updatedFields = {
+            name: body.name,
+            description: body.description,
+            websiteUrl: body.websiteUrl
+        }
+
+        const result = await blogsRepository.updateBlog(id, updatedFields);
+
+        // Throw an error if no documents were matched
+        if (result.matchedCount === 0) {
+            throw {
+                status: 500,
+                errorsMessages: [{ message: 'Failed to update the blog' }]
+            };
+        }
     },
     async deleteBlog(id: string) {
-        return await blogsRepository.deleteBlog(id);
+        // Fetch a single blog by its ID from the repository
+        const blog = await blogsRepository.getBlog(id);
+
+        // Throw an error if the blog is not found
+        if (!blog) {
+            throw {
+                status: 404,
+                errorsMessages: [{ message: 'Blog not found' }]
+            };
+        }
+
+        const result = await blogsRepository.deleteBlog(id);
+
+        // Throw an error if the blog was not deleted
+        if (result.deletedCount === 0) {
+            throw {
+                status: 500,
+                errorsMessages: [{ message: 'Failed to delete the blog' }]
+            };
+        }
     }
 };

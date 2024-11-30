@@ -1,6 +1,6 @@
 import {PostType, PostViewModelType} from "./posts.types";
 import {postsCollection} from "../db/db";
-import {ObjectId} from "mongodb";
+import {ObjectId, WithId} from "mongodb";
 import {ValidationError} from "../common/types/error.types";
 import {blogsRepository} from "../blogs/blogs.repository";
 
@@ -8,29 +8,6 @@ export const postsRepository = {
     async getPosts(pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
         const posts = await postsCollection
             .find({})
-            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
-            .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
-            .toArray();
-
-        if (posts) {
-            // Преобразуем _id в id и возвращаем нужный формат
-            return posts.map(post => ({
-                id: post._id.toString(),
-                title: post.title,
-                shortDescription: post.shortDescription,
-                content: post.content,
-                blogId: post.blogId,
-                blogName: post.blogName,
-                createdAt: post.createdAt,
-            }));
-        } else {
-            return null;
-        }
-    },
-    async getPostsByBlogId(blogId: string, pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
-        const posts = await postsCollection
-            .find({blogId})
             .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
@@ -50,6 +27,20 @@ export const postsRepository = {
         } else {
             return null;
         }
+    },
+    async getPostsByBlogId(
+        blogId: string,
+        pageNumber: number,
+        pageSize: number,
+        sortBy: string,
+        sortDirection: 'asc' | 'desc'
+    ): Promise<WithId<PostType>[]> {
+        return await postsCollection
+            .find({blogId})
+            .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray();
     },
     async getPostsCount() {
         return await postsCollection.countDocuments({});
@@ -108,6 +99,10 @@ export const postsRepository = {
         } else {
             throw new Error('Failed to create a blog');
         }
+    },
+    async createPostForSpecificBlog(post: PostType) {
+        return  await postsCollection
+            .insertOne(post);
     },
     async updatePost(id: string, body: PostType): Promise<ValidationError[] | void> {
         const post = await this.getPost(id);

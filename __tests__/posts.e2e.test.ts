@@ -126,7 +126,6 @@ describe('POST /posts', () => {
             .send(newPost)
             .expect(201);
 
-        console.log(res.body);
         expect(res.body).toHaveProperty('id');
         expect(res.body).toHaveProperty('title', 'Post 1');
         expect(res.body).toHaveProperty('shortDescription', 'This is a short description for Post 1');
