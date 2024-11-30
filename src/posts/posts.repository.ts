@@ -1,4 +1,4 @@
-import {PostType, PostViewModelType, PostViewModelTypeWithoutCreatedAt} from "./posts.types";
+import {PostType, PostViewModelType} from "./posts.types";
 import {postsCollection} from "../db/db";
 import {ObjectId} from "mongodb";
 import {ValidationError} from "../common/types/error.types";
