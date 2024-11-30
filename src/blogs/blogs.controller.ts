@@ -7,13 +7,13 @@ export const blogsController = {
     async getBlogs(req: Request, res: Response): Promise<void> {
         const {
             pageNumber,
-            pageSize,
+            pagesSize,
             sortBy,
             sortDirection,
             searchNameTerm,
         } = paginationQueries(req);
 
-        const blogs = await blogsService.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm)
+        const blogs = await blogsService.getBlogs(pageNumber, pagesSize, sortBy, sortDirection, searchNameTerm)
 
         res.status(200).json(blogs);
     },
@@ -52,15 +52,15 @@ export const blogsController = {
 
         const {
             pageNumber,
-            pageSize,
+            pagesSize,
             sortBy,
             sortDirection,
         } = paginationQueries(req);
 
         console.log(req.query)
-        console.log({pageNumber, pageSize, sortBy, sortDirection})
+        console.log({pageNumber, pagesSize, sortBy, sortDirection})
 
-        const posts = await blogsService.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
+        const posts = await blogsService.getPostsByBlogId(blogId, pageNumber, pagesSize, sortBy, sortDirection);
 
         if (!posts) {
             res.status(404).json({

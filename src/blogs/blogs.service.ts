@@ -6,14 +6,14 @@ import {ObjectId} from "mongodb";
 
 
 export const blogsService = {
-    async getBlogs(pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'asc' | 'desc', searchNameTerm: string | null) {
-        const blogs = await blogsRepository.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm);
+    async getBlogs(pageNumber: number, pagesSize: number, sortBy: string, sortDirection: 'asc' | 'desc', searchNameTerm: string | null) {
+        const blogs = await blogsRepository.getBlogs(pageNumber, pagesSize, sortBy, sortDirection, searchNameTerm);
         const blogsCount = await blogsRepository.getBlogsCount(searchNameTerm);
 
         return {
-            pageCount: Math.ceil(blogsCount / pageSize),
+            pageCount: Math.ceil(blogsCount / pagesSize),
             page: pageNumber,
-            pageSize,
+            pagesSize,
             totalCount: blogsCount,
             items: blogs
         }
@@ -21,14 +21,14 @@ export const blogsService = {
     async getBlog(blogId: string) {
         return await blogsRepository.getBlog(blogId);
     },
-    async getPostsByBlogId(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'asc' | 'desc') {
-        const posts = await postsRepository.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
+    async getPostsByBlogId(blogId: string, pageNumber: number, pagesSize: number, sortBy: string, sortDirection: 'asc' | 'desc') {
+        const posts = await postsRepository.getPostsByBlogId(blogId, pageNumber, pagesSize, sortBy, sortDirection);
         const postsCount = await postsRepository.getPostsByIdCount(blogId);
 
         return {
-            pageCount: Math.ceil(postsCount / pageSize),
+            pageCount: Math.ceil(postsCount / pagesSize),
             page: pageNumber,
-            pageSize,
+            pagesSize,
             totalCount: postsCount,
             items: posts
         }

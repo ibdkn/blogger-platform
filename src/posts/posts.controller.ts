@@ -6,12 +6,12 @@ export const postsController = {
     async getPosts(req: Request, res: Response): Promise<void> {
         const {
             pageNumber,
-            pageSize,
+            pagesSize,
             sortBy,
             sortDirection,
         } = paginationQueries(req);
 
-        const posts = await postsService.getPosts(pageNumber, pageSize, sortBy, sortDirection);
+        const posts = await postsService.getPosts(pageNumber, pagesSize, sortBy, sortDirection);
         res.status(200).json(posts);
     },
     async getPost(req: Request, res: Response): Promise<void> {
