@@ -1,6 +1,5 @@
 import {Request, Response} from "express";
-import {postsRepository} from "./posts.repository";
-import {paginationPostQueries} from "../helpers/pagination.helper";
+import {paginationQueries} from "../helpers/pagination.helper";
 import {postsService} from "./posts.service";
 
 export const postsController = {
@@ -10,7 +9,7 @@ export const postsController = {
             pageSize,
             sortBy,
             sortDirection,
-        } = paginationPostQueries(req);
+        } = paginationQueries(req);
 
         const posts = await postsService.getPosts(pageNumber, pageSize, sortBy, sortDirection);
         res.status(200).json(posts);
