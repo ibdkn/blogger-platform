@@ -27,7 +27,7 @@ export const blogsRepository = {
             .limit(pageSize)
             .toArray();
     },
-    async getBlogsCount(searchNameTerm: string | null) {
+    async getBlogsCount(searchNameTerm: string | null): Promise<number> {
         const filter: any = {};
 
         // Add a filter condition if searchNameTerm is provided

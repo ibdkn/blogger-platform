@@ -1,40 +1,20 @@
-import {PostType, PostViewModelType} from "./posts.types";
+import {PostType} from "./posts.types";
 import {postsCollection} from "../db/db";
-import {ObjectId, WithId} from "mongodb";
-import {ValidationError} from "../common/types/error.types";
-import {blogsRepository} from "../blogs/blogs.repository";
+import {DeleteResult, InsertOneResult, ObjectId, UpdateResult, WithId} from "mongodb";
 
 export const postsRepository = {
-    async getPosts(pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc') {
-        const posts = await postsCollection
+    async getPosts(pageNumber: number, pageSize: number, sortBy: any, sortDirection: 'asc' | 'desc'): Promise<WithId<PostType>[]> {
+        return await postsCollection
             .find({})
             .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray();
-
-        if (posts) {
-            // Преобразуем _id в id и возвращаем нужный формат
-            return posts.map(post => ({
-                id: post._id.toString(),
-                title: post.title,
-                shortDescription: post.shortDescription,
-                content: post.content,
-                blogId: post.blogId,
-                blogName: post.blogName,
-                createdAt: post.createdAt,
-            }));
-        } else {
-            return null;
-        }
     },
-    async getPostsByBlogId(
-        blogId: string,
-        pageNumber: number,
-        pageSize: number,
-        sortBy: string,
-        sortDirection: 'asc' | 'desc'
-    ): Promise<WithId<PostType>[]> {
+    async getPostsCount(): Promise<number> {
+        return await postsCollection.countDocuments({});
+    },
+    async getPostsByBlogId(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'asc' | 'desc'): Promise<WithId<PostType>[]> {
         return await postsCollection
             .find({blogId})
             .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
@@ -42,109 +22,31 @@ export const postsRepository = {
             .limit(pageSize)
             .toArray();
     },
-    async getPostsCount() {
-        return await postsCollection.countDocuments({});
-    },
-    async getPostsByIdCount(blogId: string) {
+    async getPostsByIdCount(blogId: string): Promise<number> {
         return await postsCollection.countDocuments({blogId});
     },
-    async getPost(id: string): Promise<PostViewModelType | ValidationError[] | null> {
-        const post = await postsCollection
+    async getPost(id: string): Promise<WithId<PostType> | null> {
+        return await postsCollection
             .findOne({_id: new ObjectId(id)});
-
-        if (post) {
-            // Преобразуем _id в id и возвращаем нужный формат
-            return {
-                id: post._id.toString(),
-                title: post.title,
-                shortDescription: post.shortDescription,
-                content: post.content,
-                blogId: post.blogId,
-                blogName: post.blogName,
-                createdAt: post.createdAt,
-            };
-        } else {
-            return null;
-        }
     },
-    async createPost(body: Omit<PostType, 'blogName' | 'isMembership'>) {
-        const blog = await blogsRepository.getBlog(body.blogId);
-
-        // Если пост не найден, возвращаем массив ошибок
-        if (!blog) return [{field: 'id', message: 'Blog not found'}];
-
-        const post = {
-            title: body.title,
-            shortDescription: body.shortDescription,
-            content: body.content,
-            blogId: body.blogId,
-            blogName: blog.name,
-            createdAt: new Date().toISOString(),
-        }
-
-        const result = await postsCollection
-            .insertOne(post);
-
-        // Проверяем, что вставка прошла успешно, и формируем объект результата
-        if (result.acknowledged) {
-            return {
-                id: result.insertedId.toString(), // Преобразуем _id в строку
-                title: post.title,
-                shortDescription: post.shortDescription,
-                content: post.content,
-                blogId: post.blogId,
-                blogName: post.blogName,
-                createdAt: post.createdAt,
-            };
-        } else {
-            throw new Error('Failed to create a blog');
-        }
+    async createPost(newPost: PostType): Promise<InsertOneResult> {
+        return await postsCollection
+            .insertOne(newPost);
     },
-    async createPostForSpecificBlog(post: PostType) {
-        return  await postsCollection
+    async createPostForSpecificBlog(post: PostType): Promise<InsertOneResult> {
+        return await postsCollection
             .insertOne(post);
     },
-    async updatePost(id: string, body: PostType): Promise<ValidationError[] | void> {
-        const post = await this.getPost(id);
-
-        // Если пост не найден, возвращаем массив ошибок
-        if (!post) return [{field: 'id', message: 'Post not found'}];
-
-        const blog = await blogsRepository.getBlog(body.blogId);
-
-        // Если блог не найден, возвращаем массив ошибок
-        if (!blog) return [{field: 'id', message: 'Blog not found'}];
-
-        // Обновляем свойства поста
-        const result = await postsCollection
+    async updatePost(id: string, fields: Omit<PostType, 'blogName' | 'createdAt'>): Promise<UpdateResult>  {
+        return await postsCollection
             .updateOne(
-                {_id: new ObjectId(id)}, // Условие поиска
+                {_id: new ObjectId(id)},
                 {
-                    $set: {
-                        title: body.title,
-                        shortDescription: body.shortDescription,
-                        content: body.content,
-                        blogId: body.blogId
-                    }
+                    $set: fields
                 })
-
-        // Если ничего не обновлено, возвращаем ошибку
-        if (result.matchedCount === 0) {
-            return [{field: 'id', message: 'Post do not updated'}];
-        }
     },
-    async deletePost(id: string): Promise<ValidationError[] | void> {
-        const post = await this.getPost(id);
-
-        // Если пост не найден, возвращаем массив ошибок
-        if (!post) return [{field: 'id', message: 'Post not found'}];
-
-        // Если пост найден, то удаляем его из бд
-        const result = await postsCollection
+    async deletePost(id: string): Promise<DeleteResult> {
+        return await postsCollection
             .deleteOne({_id: new ObjectId(id)})
-
-        if (result.deletedCount === 0) {
-            return [{field: 'id', message: 'Post was not deleted'}];
-        }
     }
 }

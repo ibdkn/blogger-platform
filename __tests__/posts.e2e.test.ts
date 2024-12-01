@@ -84,7 +84,7 @@ describe('GET /posts/{id}', () => {
 
         expect(res.status).toBe(404);
         console.log(res.body)
-        expect(res.body).toStrictEqual({"errorsMessages": [{"field": "id", "message": "Post not found"}]});
+        expect(res.body).toStrictEqual({"errorsMessages": [{"message": "Post not found"}]});
     });
 });
 
@@ -248,7 +248,7 @@ describe('PUT /posts/{id}', () => {
         expect(res.body).toHaveProperty('errorsMessages');
         expect(res.body.errorsMessages).toEqual(
             expect.arrayContaining([
-                { field: 'id', message: 'Post not found' }
+                { message: 'Post not found' }
             ])
         );
     });
