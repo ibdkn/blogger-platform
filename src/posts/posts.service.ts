@@ -1,10 +1,9 @@
 import {postsRepository} from "./posts.repository";
 import {PostType, PostViewModelType} from "./posts.types";
-import {blogsService} from "../blogs/blogs.service";
 import {blogsRepository} from "../blogs/blogs.repository";
-import {BlogType, BlogViewModelType} from "../blogs/blogs.types";
+import {BlogViewModelType} from "../blogs/blogs.types";
 import {PaginatedResult} from "../common/types/pagination.types";
-import {DeleteResult, InsertOneResult, ObjectId, UpdateResult, WithId} from "mongodb";
+import {DeleteResult, InsertOneResult, UpdateResult, WithId} from "mongodb";
 
 export const postsService = {
     async getPosts(

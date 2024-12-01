@@ -1,8 +1,6 @@
 import {blogsRepository} from "./blogs.repository";
-import {postsRepository} from "../posts/posts.repository";
 import {BlogType, BlogViewModelType} from "./blogs.types";
-import {PostType} from "../posts/posts.types";
-import {ObjectId, WithId} from "mongodb";
+import {WithId} from "mongodb";
 import {PaginatedResult} from "../common/types/pagination.types";
 
 

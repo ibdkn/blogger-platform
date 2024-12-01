@@ -1,7 +1,6 @@
 import {BlogType, BlogViewModelType} from './blogs.types';
-import {blogsCollection, postsCollection} from "../db/db";
-import {DeleteResult, InsertOneResult, ObjectId, UpdateOneModel, UpdateResult, WithId} from "mongodb";
-import {PostType} from "../posts/posts.types";
+import {blogsCollection} from "../db/db";
+import {DeleteResult, InsertOneResult, ObjectId, UpdateResult, WithId} from "mongodb";
 
 export const blogsRepository = {
     async getBlogs(
