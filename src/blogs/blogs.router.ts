@@ -13,5 +13,5 @@ blogsRouter.get('/:id', validateObjectId, blogsController.getBlog);
 blogsRouter.get('/:blogId/posts', validateObjectId, blogsController.getPostsByBlogId);
 blogsRouter.post('/', authMiddleware, ...validateBlogsFields, handleValidationErrors, blogsController.createBlog);
 blogsRouter.post('/:blogId/posts', authMiddleware, validateObjectId, ...validatePostFields, handleValidationErrors, blogsController.createPostForSpecificBlog);
-blogsRouter.put('/:id', authMiddleware, ...validateBlogsFields, handleValidationErrors, blogsController.updateBlog);
-blogsRouter.delete('/:id', authMiddleware, blogsController.deleteBlog);
+blogsRouter.put('/:id', authMiddleware, validateObjectId,  ...validateBlogsFields, handleValidationErrors, blogsController.updateBlog);
+blogsRouter.delete('/:id', authMiddleware, validateObjectId, blogsController.deleteBlog);
