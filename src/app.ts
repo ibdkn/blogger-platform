@@ -4,6 +4,8 @@ import {SETTINGS} from "./settings";
 import {blogsRouter} from "./blogs/blogs.router";
 import {postsRouter} from "./posts/posts.router";
 import {testingRouter} from "./testing/testing.router";
+import {authRouter} from "./auth/auth.router";
+import {usersRouter} from "./users/users.router";
 
 export const app = express();
 app.use(express.json());
@@ -14,6 +16,8 @@ app.get('/', (req: Request, res: Response) => {
     res.status(200).json('Welcome to blogger-platform! Version 1.0');
 })
 
+app.use(SETTINGS.PATH.AUTH, authRouter);
 app.use(SETTINGS.PATH.BLOGS, blogsRouter);
 app.use(SETTINGS.PATH.POSTS, postsRouter);
+app.use(SETTINGS.PATH.USERS, usersRouter);
 app.use(SETTINGS.PATH.TESTING, testingRouter);

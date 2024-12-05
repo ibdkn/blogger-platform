@@ -2,9 +2,11 @@ import {Collection, MongoClient} from 'mongodb';
 import {BlogType} from "../blogs/blogs.types";
 import {PostType} from "../posts/posts.types";
 import {SETTINGS} from "../settings";
+import {UserType} from "../users/users.type";
 
 export let blogsCollection: Collection<BlogType>;
 export let postsCollection: Collection<PostType>;
+export let usersCollection: Collection<UserType>;
 
 export const runDb = async (url: string): Promise<boolean> => {
     const client = new MongoClient(url);
@@ -12,6 +14,7 @@ export const runDb = async (url: string): Promise<boolean> => {
 
     blogsCollection = db.collection<BlogType>(SETTINGS.PATH.BLOGS);
     postsCollection = db.collection<PostType>(SETTINGS.PATH.POSTS);
+    usersCollection = db.collection<UserType>(SETTINGS.PATH.USERS);
 
     try {
         // Устанавливаем соединение
