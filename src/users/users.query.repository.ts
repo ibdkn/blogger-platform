@@ -25,7 +25,7 @@ export const usersQueryRepository = {
         }
 
         const users = await usersRepository.getUsersWithPagination(pageNumber, pageSize, sortBy, sortDirection, filter);
-        const usersCount = await usersRepository.getUsersCount(searchLoginTerm, searchEmailTerm);
+        const usersCount = await usersRepository.getUsersCount(filter);
 
         if (!users) {
             return {

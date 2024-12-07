@@ -22,17 +22,7 @@ export const usersRepository = {
             .limit(pageSize)
             .toArray();
     },
-    async getUsersCount(searchLoginTerm: string | null, searchEmailTerm: string | null) {
-        const filter: any = {};
-
-        if (searchLoginTerm) {
-            filter.login = {$regex: searchLoginTerm, $options: 'i'}
-        }
-
-        if (searchEmailTerm) {
-            filter.email = {$regex: searchLoginTerm, $options: 'i'}
-        }
-
+    async getUsersCount(filter) {
         return await usersCollection.countDocuments(filter);
     },
     async getUser(id: string) {
