@@ -4,10 +4,10 @@ import {authService} from "./auth.service";
 export const AuthController = {
     async login(req: Request, res: Response): Promise<void> {
         try {
-            const { login, email, password } = req.body;
+            const { loginOrEmail, password } = req.body;
 
             // Передаем данные в сервис
-            await authService.login({login, email}, password);
+            await authService.login(loginOrEmail, password);
 
             // Возвращаем базовую информацию о пользователе
             res.status(204).send();

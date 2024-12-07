@@ -39,10 +39,9 @@ export const usersRepository = {
         return await usersCollection
             .findOne({_id: new ObjectId(id)});
     },
-    async findUserByLoginOrEmail(loginOrEmail: any) {
-        const {login, email} = loginOrEmail;
+    async findUserByLoginOrEmail(loginOrEmail: string) {
         return await usersCollection
-            .findOne({$or: [{login}, {email}]});
+            .findOne({$or: [{login: loginOrEmail}, {email: loginOrEmail}]});
     },
     async createUser(user: UserType) {
         return await usersCollection

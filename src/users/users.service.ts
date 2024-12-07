@@ -22,8 +22,10 @@ export const usersService = {
     async createUser(dto: Omit<UserType, 'createdAt'>) {
         const {login, password, email} = dto;
 
+        const loginOrEmail = login || email
+
         // Проверка на существование email или login
-        const existingUser = await usersRepository.findUserByLoginOrEmail({login, email});
+        const existingUser = await usersRepository.findUserByLoginOrEmail(loginOrEmail);
 
         if (existingUser) {
             const errorsMessages = [];
