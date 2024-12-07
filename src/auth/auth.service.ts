@@ -3,14 +3,13 @@ import {usersRepository} from "../users/users.repository";
 const bcrypt = require('bcrypt');
 
 export const authService = {
-    async login(loginOrEmail: string, password: string) {
-        console.log(loginOrEmail, password)
+    async login(loginOrEmail, password: string) {
         const user = await usersRepository.findUserByLoginOrEmail(loginOrEmail);
 
         if (!user) {
             throw {
                 status: 404,
-                errorsMessages: [{ message: 'User not found' }]
+                errorsMessages: [{ field: 'login or email', message: 'User not found' }]
             };
         }
 
@@ -19,7 +18,7 @@ export const authService = {
         if (!isPasswordValid) {
             throw {
                 status: 401,
-                errorsMessages: [{ message: 'Invalid credentials' }]
+                errorsMessages: [{  field: 'password', message: 'Invalid credentials' }]
             };
         }
     }

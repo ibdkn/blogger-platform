@@ -9,6 +9,8 @@ export const paginationQueries = (req: Request) => {
         ? 'asc'
         : 'desc';
     const searchNameTerm: string | null = req.query.searchNameTerm ? String(req.query.searchNameTerm) : null;
+    const searchLoginTerm: string | null = req.query.searchLoginTerm ? String(req.query.searchLoginTerm) : null;
+    const searchEmailTerm: string | null = req.query.searchEmailTerm ? String(req.query.searchEmailTerm) : null;
 
-    return {pageNumber, pageSize, sortBy, sortDirection, searchNameTerm};
+    return {pageNumber, pageSize, sortBy, sortDirection, searchNameTerm, searchLoginTerm, searchEmailTerm};
 }

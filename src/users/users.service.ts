@@ -5,17 +5,37 @@ const bcrypt = require('bcrypt');
 
 export const usersService = {
     async getUsers() {
-        return usersRepository.getUsers();
+        return await usersRepository.getUsers();
     },
     async getUser(id: string) {
         const user = await usersRepository.getUser(id);
 
-        if (!user) return null;
+        if (!user) {
+            throw {
+                status: 404,
+                errorsMessages: [{ message: 'User not found' }]
+            };
+        }
 
         return user._id.toString();
     },
     async createUser(dto: Omit<UserType, 'createdAt'>) {
         const {login, password, email} = dto;
+
+        // Проверка на существование email или login
+        const existingUser = await usersRepository.findUserByLoginOrEmail({login, email});
+
+        if (existingUser) {
+            const errorsMessages = [];
+            if (existingUser.login === login) {
+                errorsMessages.push({ field: 'login', message: 'Login already exists' });
+            }
+            if (existingUser.email === email) {
+                errorsMessages.push({ field: 'email', message: 'Email already exists' });
+            }
+
+            throw {status: 400, errorsMessages};
+        }
 
         // Хэшируем пароль перед сохранением
         const hashedPassword = await bcrypt.hash(password, 10);

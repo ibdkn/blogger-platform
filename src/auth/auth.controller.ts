@@ -5,10 +5,9 @@ export const AuthController = {
     async login(req: Request, res: Response): Promise<void> {
         try {
             const { login, email, password } = req.body;
-            const loginOrEmail = login || email;
 
             // Передаем данные в сервис
-            await authService.login(loginOrEmail, password);
+            await authService.login({login, email}, password);
 
             // Возвращаем базовую информацию о пользователе
             res.status(204).send();
