@@ -15,13 +15,22 @@ export const usersQueryRepository = {
     ) {
         const filter: any = {};
 
-        // todo сработает ли одновременно или перезапишется ?
+        // Создаем массив условий для $or
+        const orConditions: any[] = [];
+
+        // Добавляем условие для login
         if (searchLoginTerm) {
-            filter.login = {$regex: searchLoginTerm, $options: 'i'}
+            orConditions.push({login: {$regex: searchLoginTerm, $options: 'i'}});
         }
 
+        // Добавляем условие для email
         if (searchEmailTerm) {
-            filter.email = {$regex: searchEmailTerm, $options: 'i'}
+            orConditions.push({email: {$regex: searchEmailTerm, $options: 'i'}});
+        }
+
+        // Если есть условия, добавляем $or в фильтр
+        if (orConditions.length > 0) {
+            filter.$or = orConditions;
         }
 
         const users = await usersRepository.getUsersWithPagination(pageNumber, pageSize, sortBy, sortDirection, filter);
