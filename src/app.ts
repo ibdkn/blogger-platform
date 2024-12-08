@@ -13,7 +13,7 @@ app.use(cors());
 
 app.get('/', (req: Request, res: Response) => {
     // эндпоинт, который будет показывать на верселе какая версия бэкэнда сейчас залита
-    res.status(200).json('Welcome to blogger-platform! Version 1.0');
+    res.status(200).json('Welcome to blogger-platform! Version 5.0');
 })
 
 app.use(SETTINGS.PATH.AUTH, authRouter);
