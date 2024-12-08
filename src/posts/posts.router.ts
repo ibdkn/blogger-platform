@@ -9,8 +9,8 @@ export const postsRouter = Router();
 
 postsRouter.get('/', postsController.getPosts);
 postsRouter.get('/:id', postsController.getPost);
-blogsRouter.get('/:blogId/posts', postsController.getPostsByBlogId);
+postsRouter.get('/:blogId/posts', postsController.getPostsByBlogId);
 postsRouter.post('/', authMiddleware, ...validatePostFields, handleValidationErrors, postsController.createPost);
-blogsRouter.post('/:blogId/posts', authMiddleware, ...validatePostFields, handleValidationErrors, postsController.createPostForSpecificBlog);
+postsRouter.post('/:blogId/posts', authMiddleware, ...validatePostFields, handleValidationErrors, postsController.createPostForSpecificBlog);
 postsRouter.put('/:id', authMiddleware, ...validatePostFields, handleValidationErrors, postsController.updatePost);
 postsRouter.delete('/:id', authMiddleware, postsController.deletePost);

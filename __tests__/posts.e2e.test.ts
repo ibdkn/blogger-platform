@@ -110,7 +110,7 @@ describe('GET /{blogId}/posts', () => {
 
     it('should return the post by blog id', async () => {
         const res = await req
-            .get(`${SETTINGS.PATH.BLOGS}/${insertedBlogId}/posts`)
+            .get(`${SETTINGS.PATH.POSTS}/${insertedBlogId}/posts`)
             .expect(200)
 
         expect(res.status).toBe(200);
@@ -122,7 +122,7 @@ describe('GET /{blogId}/posts', () => {
 
     it('should return 404 the blog does not exist ', async () => {
         const res = await req
-            .get(`${SETTINGS.PATH.BLOGS}/674b70548cd71c3e3248163a/posts`)
+            .get(`${SETTINGS.PATH.POSTS}/674b70548cd71c3e3248163a/posts`)
             .expect(404)
 
         expect(res.status).toBe(404);
