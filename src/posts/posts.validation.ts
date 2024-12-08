@@ -1,4 +1,5 @@
 import {body} from 'express-validator';
+import {blogsRepository} from "../blogs/blogs.repository";
 
 export const titleValidate = body('title')
     .trim()
@@ -22,6 +23,13 @@ export const blogIdValidate = body('blogId')
     .trim()
     .notEmpty().withMessage('BlogId is required')
     .isMongoId().withMessage('BlogId must be a valid MongoID')
+    .custom(async (value) => {
+        const blog = await blogsRepository.getBlog(value);
+        if (!blog) {
+            throw new Error('Blog not found');
+        }
+        return true;
+    })
 
 export const validatePostFields = [
     titleValidate,
