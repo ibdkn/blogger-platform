@@ -1,19 +1,19 @@
 import {usersRepository} from "./users.repository";
 import {UserType} from "./users.type";
-
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
+import {DeleteResult, InsertOneResult, WithId} from "mongodb";
+import {ValidationErrorType} from "../common/types/error.types";
 
 export const usersService = {
-    async createUser(dto: Omit<UserType, 'createdAt'>) {
+    async createUser(dto: Omit<UserType, 'createdAt'>): Promise<string> {
         const {login, password, email} = dto;
 
-        const loginOrEmail = login || email
+        const loginOrEmail: string = login || email
 
-        // Проверка на существование email или login
-        const existingUser = await usersRepository.findUserByLoginOrEmail(loginOrEmail);
+        const existingUser: WithId<UserType> | null = await usersRepository.findUserByLoginOrEmail(loginOrEmail);
 
         if (existingUser) {
-            const errorsMessages = [];
+            const errorsMessages: ValidationErrorType[] = [];
             if (existingUser.login === login) {
                 errorsMessages.push({ field: 'login', message: 'Login already exists' });
             }
@@ -24,8 +24,8 @@ export const usersService = {
             throw {status: 400, errorsMessages};
         }
 
-        // Хэшируем пароль перед сохранением
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const salt: string = await bcrypt.genSalt(10);
+        const hashedPassword: string = await bcrypt.hash(password, salt);
 
         const newUser = {
             login,
@@ -34,14 +34,12 @@ export const usersService = {
             createdAt: new Date().toISOString()
         }
 
-        // Создаем пользователя
-        const result = await usersRepository.createUser(newUser);
+        const result: InsertOneResult<UserType> = await usersRepository.createUser(newUser);
 
-        // Возвращаем _id созданного пользователя
         return result.insertedId.toString();
     },
-    async deleteUser(id: string) {
-        const user = await usersRepository.getUser(id);
+    async deleteUser(id: string): Promise<DeleteResult> {
+        const user: WithId<UserType> | null = await usersRepository.getUser(id);
 
         if (!user) {
             throw {

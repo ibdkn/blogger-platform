@@ -2,9 +2,13 @@ import {Request, Response} from "express";
 import {usersService} from "./users.service";
 import {usersQueryRepository} from "./users.query.repository";
 import {paginationQueries} from "../helpers/pagination.helper";
+import {UserViewModelType} from "./users.type";
+import {ValidationErrorType} from "../common/types/error.types";
+import {validateObjectId} from "../helpers/validation.helper";
+import {PaginatedResult} from "../common/types/pagination.types";
 
 export const usersController = {
-    async getUsers(req: Request, res: Response) {
+    async getUsers(req: Request, res: Response): Promise<void> {
         try {
             const {
                 pageNumber,
@@ -15,8 +19,8 @@ export const usersController = {
                 searchEmailTerm,
             } = paginationQueries(req);
 
-            const users = await usersQueryRepository.getUsers(pageNumber, pageSize, sortBy, sortDirection,
-                searchLoginTerm, searchEmailTerm);
+            const users: PaginatedResult<UserViewModelType> = await usersQueryRepository.getUsers(pageNumber, pageSize,
+                sortBy, sortDirection, searchLoginTerm, searchEmailTerm);
 
             res.status(200).send(users);
         } catch (e: any) {
@@ -28,15 +32,13 @@ export const usersController = {
             }
         }
     },
-    async createUser(req: Request, res: Response) {
+    async createUser(req: Request, res: Response): Promise<void> {
         try {
             const {login, password, email} = req.body;
 
-            // Создаем пользователя через сервис
-            const userId = await usersService.createUser({login, password, email});
+            const userId: string = await usersService.createUser({login, password, email});
 
-            // Получаем данные пользователя для ViewModel
-            const newUser = await usersQueryRepository.createUser(userId);
+            const newUser: UserViewModelType | null = await usersQueryRepository.createUser(userId);
 
             res.status(201).send(newUser);
         } catch (e: any) {
@@ -48,9 +50,15 @@ export const usersController = {
             }
         }
     },
-    async deleteUser(req: Request, res: Response) {
+    async deleteUser(req: Request, res: Response): Promise<void> {
         try {
             const {id} = req.params;
+            const errorsMessages: ValidationErrorType[] = validateObjectId(id);
+
+            if (errorsMessages.length > 0) {
+                res.status(400).json({ errorsMessages });
+                return;
+            }
 
             await usersService.deleteUser(id);
 

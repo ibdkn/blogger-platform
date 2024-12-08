@@ -6,10 +6,8 @@ export const AuthController = {
         try {
             const { loginOrEmail, password } = req.body;
 
-            // Передаем данные в сервис
             await authService.login(loginOrEmail, password);
 
-            // Возвращаем базовую информацию о пользователе
             res.status(204).send();
         } catch (e: any) {
             if (e.status) {

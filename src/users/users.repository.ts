@@ -1,13 +1,13 @@
-import {blogsCollection, usersCollection} from "../db/db";
+import {usersCollection} from "../db/db";
 import {UserType} from "./users.type";
-import {ObjectId} from "mongodb";
+import {ObjectId, WithId} from "mongodb";
 
 export const usersRepository = {
-    async getUser(id: string) {
+    async getUser(id: string): Promise<WithId<UserType> | null> {
         return await usersCollection
             .findOne({_id: new ObjectId(id)});
     },
-    async findUserByLoginOrEmail(loginOrEmail: string) {
+    async findUserByLoginOrEmail(loginOrEmail: string): Promise<WithId<UserType> | null> {
         return await usersCollection
             .findOne({$or: [{login: loginOrEmail}, {email: loginOrEmail}]});
     },

@@ -1,8 +1,9 @@
-import {ObjectId} from "mongodb";
+import {ObjectId, WithId} from "mongodb";
 import {usersCollection} from "../db/db";
 import {usersRepository} from "./users.repository";
 import {BlogViewModelType} from "../blogs/blogs.types";
-import {UserViewModelType} from "./users.type";
+import {UserType, UserTypeWithoutPassword, UserViewModelType} from "./users.type";
+import {PaginatedResult} from "../common/types/pagination.types";
 
 export const usersQueryRepository = {
     async getUsers(
@@ -12,7 +13,7 @@ export const usersQueryRepository = {
         sortDirection: 'asc' | 'desc',
         searchLoginTerm: string | null,
         searchEmailTerm: string | null
-    ) {
+    ): Promise<PaginatedResult<UserViewModelType>> {
         const filter: any = {};
 
         const orConditions = [
@@ -24,7 +25,7 @@ export const usersQueryRepository = {
             filter.$or = orConditions;
         }
 
-        const users = await usersCollection
+        const users: WithId<UserType>[] = await usersCollection
             .find(filter)
             .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 } as any)
             .skip((pageNumber - 1) * pageSize)
@@ -43,7 +44,7 @@ export const usersQueryRepository = {
             }
         }
 
-        const transformedUsers = users.map(user => ({
+        const transformedUsers: UserViewModelType[] = users.map(user => ({
             id: user._id.toString(),
             login: user.login,
             email: user.email,
@@ -58,14 +59,13 @@ export const usersQueryRepository = {
             items: transformedUsers
         }
     },
-    async createUser(id: string) {
-        const user = await usersCollection.findOne({ _id: new ObjectId(id) });
+    async createUser(id: string): Promise<UserViewModelType | null> {
+        const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(id) });
 
         if (!user) return null;
 
-        // Формируем ViewModel и возвращаем назад в контроллер
         return {
-            id: user._id.toString(), // конвертируем _id в id
+            id: user._id.toString(),
             login: user.login,
             email: user.email,
             createdAt: user.createdAt,
