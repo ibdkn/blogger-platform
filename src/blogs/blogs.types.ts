@@ -9,3 +9,7 @@ export type BlogType = {
 export type BlogViewModelType = {
     id: string
 } & BlogType
+
+export type BlogEntityModelType = {
+    _id: string
+} & BlogType

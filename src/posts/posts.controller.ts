@@ -14,7 +14,7 @@ export const postsController = {
                 sortDirection,
             } = paginationQueries(req);
 
-            const posts: PaginatedResult<PostViewModelType> = await postsService.getPosts(pageNumber, pageSize, sortBy, sortDirection);
+            const posts = await postsService.getPosts(pageNumber, pageSize, sortBy, sortDirection);
             res.status(200).json(posts);
         } catch (e: any) {
             console.error('Error occurred while fetching posts:', e);
@@ -31,6 +31,39 @@ export const postsController = {
                 res.status(e.status).json({ errorsMessages: e.errorsMessages });
             } else {
                 console.error('Error occurred while fetching posts:', e);
+                res.status(500).json({ message: 'Internal server error' });
+            }
+        }
+    },
+    async getPostsByBlogId(req: Request, res: Response): Promise<void> {
+        try {
+            const {
+                pageNumber,
+                pageSize,
+                sortBy,
+                sortDirection,
+            } = paginationQueries(req);
+
+            const posts = await postsService.getPostsByBlogId(req.params.blogId, pageNumber, pageSize, sortBy, sortDirection);
+
+            res.status(200).json(posts);
+        } catch (e: any) {
+            if (e.status) {
+                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+            } else {
+                res.status(500).json({ message: 'Internal server error' });
+            }
+        }
+    },
+    async createPostForSpecificBlog(req: Request, res: Response){
+        try {
+            const newPost = await postsService.createPostForSpecificBlog(req.params.blogId, req.body);
+
+            res.status(201).json(newPost);
+        } catch (e: any) {
+            if (e.status) {
+                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+            } else {
                 res.status(500).json({ message: 'Internal server error' });
             }
         }

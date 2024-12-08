@@ -1,7 +1,7 @@
 import {postsRepository} from "./posts.repository";
 import {PostType, PostViewModelType} from "./posts.types";
 import {blogsRepository} from "../blogs/blogs.repository";
-import {BlogViewModelType} from "../blogs/blogs.types";
+import {BlogEntityModelType, BlogType, BlogViewModelType} from "../blogs/blogs.types";
 import {PaginatedResult} from "../common/types/pagination.types";
 import {DeleteResult, InsertOneResult, UpdateResult, WithId} from "mongodb";
 
@@ -11,7 +11,7 @@ export const postsService = {
         pageSize: number,
         sortBy: string,
         sortDirection: 'asc' | 'desc'
-    ): Promise<PaginatedResult<PostViewModelType>> {
+    ) {
         // Fetch paginated and sorted posts from the repository
         const posts: WithId<PostType>[] = await postsRepository.getPosts(pageNumber, pageSize, sortBy, sortDirection);
         // Get the total count of posts matching the filter
@@ -52,9 +52,9 @@ export const postsService = {
         pageSize: number,
         sortBy: string,
         sortDirection: 'asc' | 'desc'
-    ): Promise<PaginatedResult<PostViewModelType>> {
+    ) {
         // Fetch a single blog by its ID from the repository
-        const blog: BlogViewModelType | null = await blogsRepository.getBlog(blogId);
+        const blog = await blogsRepository.getBlog(blogId);
 
         // Throw an error if the blog is not found
         if (!blog) {
@@ -79,12 +79,12 @@ export const postsService = {
             }
         }
 
-        const transformedPosts: PostViewModelType[] = posts.map(post => ({
-            id: post._id.toString(), // Convert ObjectId to string
+        const transformedPosts = posts.map(post => ({
+            id: post._id.toString(),
             title: post.title,
             shortDescription: post.shortDescription,
             content: post.content,
-            blogId: blog.id,
+            blogId: blog._id,
             blogName: blog.name,
             createdAt: post.createdAt,
         }));
@@ -122,7 +122,7 @@ export const postsService = {
         body: Omit<PostType, 'blogId' | 'blogName' | 'isMembership'>
     ): Promise<PostViewModelType> {
         // Fetch a single blog by its ID from the repository
-        const blog: BlogViewModelType | null = await blogsRepository.getBlog(blogId);
+        const blog = await blogsRepository.getBlog(blogId);
 
         // Throw an error if the blog is not found
         if (!blog) {
@@ -160,7 +160,7 @@ export const postsService = {
     },
     async createPost(body: Omit<PostType, 'blogName' | 'isMembership'>): Promise<PostViewModelType> {
         // Fetch a single blog by its ID from the repository
-        const blog: BlogViewModelType | null = await blogsRepository.getBlog(body.blogId);
+        const blog = await blogsRepository.getBlog(body.blogId);
 
         // Throw an error if the blog is not found
         if (!blog) {
@@ -211,8 +211,7 @@ export const postsService = {
             };
         }
 
-        // Fetch a single blog by its ID from the repository
-        const blog: BlogViewModelType | null = await blogsRepository.getBlog(body.blogId);
+        const blog = await blogsRepository.getBlog(body.blogId);
 
         // Throw an error if the blog is not found
         if (!blog) {

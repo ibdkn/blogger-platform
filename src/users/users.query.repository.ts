@@ -24,8 +24,14 @@ export const usersQueryRepository = {
             filter.$or = orConditions;
         }
 
-        const users = await this.getUsersWithPagination(pageNumber, pageSize, sortBy, sortDirection, filter);
-        const usersCount = await this.getUsersCount(filter);
+        const users = await usersCollection
+            .find(filter)
+            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 } as any)
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray();
+
+        const usersCount = await usersCollection.countDocuments(filter);
 
         if (!users) {
             return {
@@ -51,23 +57,6 @@ export const usersQueryRepository = {
             totalCount: usersCount,
             items: transformedUsers
         }
-    },
-    async getUsersWithPagination(
-        pageNumber: number,
-        pageSize: number,
-        sortBy: string,
-        sortDirection: 'asc' | 'desc',
-        filter: any
-    ) {
-        return await usersCollection
-            .find(filter)
-            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 } as any)
-            .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
-            .toArray();
-    },
-    async getUsersCount(filter) {
-        return await usersCollection.countDocuments(filter);
     },
     async createUser(id: string) {
         const user = await usersCollection.findOne({ _id: new ObjectId(id) });

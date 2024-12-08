@@ -11,8 +11,3 @@ export type PostType = {
 export type PostViewModelType = {
     id: string;
 } & PostType;
-
-// Если в представлении нужно исключить поле createdAt
-export type PostViewModelTypeWithoutCreatedAt = {
-    id: string;
-} & Omit<PostType, 'createdAt'>;

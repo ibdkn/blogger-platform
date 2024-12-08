@@ -3,11 +3,6 @@ import {UserType} from "./users.type";
 import {ObjectId} from "mongodb";
 
 export const usersRepository = {
-    async getUsers() {
-        return await usersCollection
-            .find({})
-            .toArray();
-    },
     async getUser(id: string) {
         return await usersCollection
             .findOne({_id: new ObjectId(id)});
