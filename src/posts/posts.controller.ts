@@ -3,6 +3,9 @@ import {postsService} from "./posts.service";
 import {paginationQueries} from "../helpers/pagination.helper";
 import {PaginatedResult} from "../common/types/pagination.types";
 import {PostViewModelType} from "./posts.types";
+import {postsQueryRepository} from "./posts.query.repository";
+import {ValidationErrorType} from "../common/types/error.types";
+import {validateObjectId} from "../helpers/validation.helper";
 
 export const postsController = {
     async getPosts(req: Request, res: Response): Promise<void> {
@@ -14,29 +17,51 @@ export const postsController = {
                 sortDirection,
             } = paginationQueries(req);
 
-            const posts = await postsService.getPosts(pageNumber, pageSize, sortBy, sortDirection);
+            const posts: PaginatedResult<PostViewModelType> = await postsQueryRepository.getPosts(pageNumber, pageSize,
+                sortBy, sortDirection);
+
             res.status(200).json(posts);
         } catch (e: any) {
-            console.error('Error occurred while fetching posts:', e);
-            res.status(500).json({ message: 'Internal server error' });
+            if (e.status) {
+                res.status(e.status).json({errorsMessages: e.errorsMessages});
+            } else {
+                console.error('Error occurred while fetching posts:', e);
+                res.status(500).json({message: 'Internal server error'});
+            }
         }
     },
     async getPost(req: Request, res: Response): Promise<void> {
         try {
-            const post = await postsService.getPost(req.params.id);
+            const {id} = req.params;
+            const errorsMessages: ValidationErrorType[] = validateObjectId(id);
+
+            if (errorsMessages.length > 0) {
+                res.status(400).json({ errorsMessages });
+                return;
+            }
+
+            const post: PostViewModelType = await postsQueryRepository.getPost(req.params.id);
 
             res.status(200).json(post);
         } catch (e: any) {
             if (e.status) {
-                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+                res.status(e.status).json({errorsMessages: e.errorsMessages});
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({ message: 'Internal server error' });
+                res.status(500).json({message: 'Internal server error'});
             }
         }
     },
     async getPostsByBlogId(req: Request, res: Response): Promise<void> {
         try {
+            const {blogId} = req.params;
+            const errorsMessages: ValidationErrorType[] = validateObjectId(blogId);
+
+            if (errorsMessages.length > 0) {
+                res.status(400).json({ errorsMessages });
+                return;
+            }
+
             const {
                 pageNumber,
                 pageSize,
@@ -44,27 +69,35 @@ export const postsController = {
                 sortDirection,
             } = paginationQueries(req);
 
-            const posts = await postsService.getPostsByBlogId(req.params.blogId, pageNumber, pageSize, sortBy, sortDirection);
+            const posts: PaginatedResult<PostViewModelType> = await postsQueryRepository.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
 
             res.status(200).json(posts);
         } catch (e: any) {
             if (e.status) {
-                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+                res.status(e.status).json({errorsMessages: e.errorsMessages});
             } else {
-                res.status(500).json({ message: 'Internal server error' });
+                res.status(500).json({message: 'Internal server error'});
             }
         }
     },
-    async createPostForSpecificBlog(req: Request, res: Response){
+    async createPostForSpecificBlog(req: Request, res: Response) {
         try {
-            const newPost = await postsService.createPostForSpecificBlog(req.params.blogId, req.body);
+            const {blogId} = req.params;
+            const errorsMessages: ValidationErrorType[] = validateObjectId(blogId);
+
+            if (errorsMessages.length > 0) {
+                res.status(400).json({ errorsMessages });
+                return;
+            }
+
+            const newPost = await postsService.createPostForSpecificBlog(blogId, req.body);
 
             res.status(201).json(newPost);
         } catch (e: any) {
             if (e.status) {
-                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+                res.status(e.status).json({errorsMessages: e.errorsMessages});
             } else {
-                res.status(500).json({ message: 'Internal server error' });
+                res.status(500).json({message: 'Internal server error'});
             }
         }
     },
@@ -74,37 +107,53 @@ export const postsController = {
             res.status(201).json(newPost);
         } catch (e: any) {
             if (e.status) {
-                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+                res.status(e.status).json({errorsMessages: e.errorsMessages});
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({ message: 'Internal server error' });
+                res.status(500).json({message: 'Internal server error'});
             }
         }
     },
     async updatePost(req: Request, res: Response): Promise<void> {
         try {
-            await postsService.updatePost(req.params.id, req.body);
+            const {id} = req.params;
+            const errorsMessages: ValidationErrorType[] = validateObjectId(id);
+
+            if (errorsMessages.length > 0) {
+                res.status(400).json({ errorsMessages });
+                return;
+            }
+
+            await postsService.updatePost(id, req.body);
             res.status(204).send();
         } catch (e: any) {
             if (e.status) {
-                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+                res.status(e.status).json({errorsMessages: e.errorsMessages});
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({ message: 'Internal server error' });
+                res.status(500).json({message: 'Internal server error'});
             }
         }
     },
-     async deletePost(req: Request, res: Response): Promise<void> {
-         try {
-             await postsService.deletePost(req.params.id);
-             res.status(204).send();
-         } catch (e: any) {
-             if (e.status) {
-                 res.status(e.status).json({ errorsMessages: e.errorsMessages });
-             } else {
-                 console.error('Error occurred while fetching posts:', e);
-                 res.status(500).json({ message: 'Internal server error' });
-             }
-         }
+    async deletePost(req: Request, res: Response): Promise<void> {
+        try {
+            const {id} = req.params;
+            const errorsMessages: ValidationErrorType[] = validateObjectId(id);
+
+            if (errorsMessages.length > 0) {
+                res.status(400).json({ errorsMessages });
+                return;
+            }
+
+            await postsService.deletePost(id);
+            res.status(204).send();
+        } catch (e: any) {
+            if (e.status) {
+                res.status(e.status).json({errorsMessages: e.errorsMessages});
+            } else {
+                console.error('Error occurred while fetching posts:', e);
+                res.status(500).json({message: 'Internal server error'});
+            }
+        }
     }
 }

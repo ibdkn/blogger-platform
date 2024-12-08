@@ -7,7 +7,10 @@ export type PostType = {
     createdAt: string;
 };
 
-// Для представления данных на клиенте с `id`
 export type PostViewModelType = {
     id: string;
 } & PostType;
+
+export type PostEntityModelType = {
+    _id: string
+} & PostType

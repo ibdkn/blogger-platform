@@ -1,5 +1,6 @@
 import {blogsRepository} from "./blogs.repository";
-import {BlogEntityModelType, BlogType, BlogViewModelType} from "./blogs.types";
+import {BlogType, BlogViewModelType} from "./blogs.types";
+import {WithId} from "mongodb";
 
 export const blogsService = {
     async createBlog(body: Omit<BlogType, 'createdAt' | 'isMembership'>): Promise<BlogViewModelType> {
@@ -30,7 +31,7 @@ export const blogsService = {
         }
     },
     async updateBlog(id: string, body: Omit<BlogType, 'createdAt' | 'isMembership'>) {
-        const blog: BlogEntityModelType | null = await blogsRepository.getBlog(id);
+        const blog: WithId<BlogType> | null = await blogsRepository.getBlog(id);
 
         if (!blog) {
             throw {
@@ -55,7 +56,7 @@ export const blogsService = {
         }
     },
     async deleteBlog(id: string) {
-        const blog: BlogEntityModelType | null = await blogsRepository.getBlog(id);
+        const blog: WithId<BlogType> | null = await blogsRepository.getBlog(id);
 
         if (!blog) {
             throw {

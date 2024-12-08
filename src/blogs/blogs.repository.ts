@@ -1,22 +1,11 @@
-import {BlogEntityModelType, BlogType, BlogViewModelType} from './blogs.types';
+import {BlogType} from './blogs.types';
 import {blogsCollection} from "../db/db";
-import {DeleteResult, EnhancedOmit, InferIdType, InsertOneResult, ObjectId, UpdateResult, WithId} from "mongodb";
+import {DeleteResult, InsertOneResult, ObjectId, UpdateResult, WithId} from "mongodb";
 
 export const blogsRepository = {
-    async getBlog(id: string): Promise<BlogEntityModelType | null> {
-        const blog = await blogsCollection
+    async getBlog(id: string): Promise<WithId<BlogType> | null> {
+        return await blogsCollection
             .findOne({_id: new ObjectId(id)});
-
-        if (!blog) return null;
-
-        return {
-            _id: blog._id.toString(),
-            name: blog.name,
-            description: blog.description,
-            websiteUrl: blog.websiteUrl,
-            createdAt: blog.createdAt,
-            isMembership: blog.isMembership
-        };
     },
     async createBlog(newBlog: BlogType): Promise<InsertOneResult> {
         return await blogsCollection

@@ -3,8 +3,6 @@ import {blogsService} from "./blogs.service";
 import {paginationQueries} from "../helpers/pagination.helper";
 import {PaginatedResult} from "../common/types/pagination.types";
 import {BlogType, BlogViewModelType} from "./blogs.types";
-import {postsService} from "../posts/posts.service";
-import {PostViewModelType} from "../posts/posts.types";
 import {blogsQueryRepository} from "./blogs.query.repository";
 import {validateObjectId} from "../helpers/validation.helper";
 import {ValidationErrorType} from "../common/types/error.types";
@@ -34,7 +32,6 @@ export const blogsController = {
     async getBlog(req: Request, res: Response): Promise<void> {
         try {
             const {id} = req.params;
-
             const errorsMessages: ValidationErrorType[] = validateObjectId(id);
 
             if (errorsMessages.length > 0) {

@@ -24,8 +24,6 @@ export const blogsQueryRepository = {
             .limit(pageSize)
             .toArray();
 
-        const blogsCount: number = await blogsCollection.countDocuments(filter);
-
         if (!blogs) {
             return {
                 pagesCount: 0,
@@ -36,6 +34,7 @@ export const blogsQueryRepository = {
             }
         }
 
+        const blogsCount: number = await blogsCollection.countDocuments(filter);
         const transformedBlogs: BlogViewModelType[] = blogs.map(blog => ({
             id: blog._id.toString(),
             name: blog.name,
@@ -54,7 +53,7 @@ export const blogsQueryRepository = {
         }
     },
     async getBlog(id: string): Promise<BlogViewModelType> {
-        const blog = await blogsCollection
+        const blog: WithId<BlogType> | null = await blogsCollection
             .findOne({_id: new ObjectId(id)});
 
         if (!blog) {
