@@ -2,15 +2,12 @@ import {Router} from "express";
 import {postsController} from "./posts.controller";
 import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {handleValidationErrors} from "../common/middlewares/errors-result.middleware";
-import {blogIdValidate, validatePostFields, validatePostFieldsWithBlogId} from "./posts.validation";
-import {blogsRouter} from "../blogs/blogs.router";
+import {validatePostFieldsWithBlogId} from "./posts.validation";
 
 export const postsRouter = Router();
 
 postsRouter.get('/', postsController.getPosts);
 postsRouter.get('/:id', postsController.getPost);
-blogsRouter.get('/:blogId/posts', postsController.getPostsByBlogId);
 postsRouter.post('/', authMiddleware, ...validatePostFieldsWithBlogId, handleValidationErrors, postsController.createPost);
-blogsRouter.post('/:blogId/posts', authMiddleware, ...validatePostFieldsWithBlogId, handleValidationErrors, postsController.createPostForSpecificBlog);
 postsRouter.put('/:id', authMiddleware, ...validatePostFieldsWithBlogId, handleValidationErrors, postsController.updatePost);
 postsRouter.delete('/:id', authMiddleware, postsController.deletePost);
