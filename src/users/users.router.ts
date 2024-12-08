@@ -7,6 +7,5 @@ import {authMiddleware} from "../common/middlewares/auth.middleware";
 export const usersRouter = Router();
 
 usersRouter.get('/', usersController.getUsers);
-usersRouter.get('/:id', authMiddleware, usersController.getUser);
 usersRouter.post('/', authMiddleware, ...validateUserFields, handleValidationErrors, usersController.createUser);
 usersRouter.delete('/:id', authMiddleware, usersController.deleteUser);

@@ -8,23 +8,6 @@ export const usersRepository = {
             .find({})
             .toArray();
     },
-    async getUsersWithPagination(
-        pageNumber: number,
-        pageSize: number,
-        sortBy: string,
-        sortDirection: 'asc' | 'desc',
-        filter: any
-    ) {
-        return await usersCollection
-            .find(filter)
-            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 } as any)
-            .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
-            .toArray();
-    },
-    async getUsersCount(filter) {
-        return await usersCollection.countDocuments(filter);
-    },
     async getUser(id: string) {
         return await usersCollection
             .findOne({_id: new ObjectId(id)});

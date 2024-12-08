@@ -15,26 +15,17 @@ export const usersQueryRepository = {
     ) {
         const filter: any = {};
 
-        // Создаем массив условий для $or
-        const orConditions: any[] = [];
+        const orConditions = [
+            searchLoginTerm && { login: { $regex: searchLoginTerm, $options: 'i' } },
+            searchEmailTerm && { email: { $regex: searchEmailTerm, $options: 'i' } }
+        ].filter(Boolean);
 
-        // Добавляем условие для login
-        if (searchLoginTerm) {
-            orConditions.push({login: {$regex: searchLoginTerm, $options: 'i'}});
-        }
-
-        // Добавляем условие для email
-        if (searchEmailTerm) {
-            orConditions.push({email: {$regex: searchEmailTerm, $options: 'i'}});
-        }
-
-        // Если есть условия, добавляем $or в фильтр
         if (orConditions.length > 0) {
             filter.$or = orConditions;
         }
 
-        const users = await usersRepository.getUsersWithPagination(pageNumber, pageSize, sortBy, sortDirection, filter);
-        const usersCount = await usersRepository.getUsersCount(filter);
+        const users = await this.getUsersWithPagination(pageNumber, pageSize, sortBy, sortDirection, filter);
+        const usersCount = await this.getUsersCount(filter);
 
         if (!users) {
             return {
@@ -61,18 +52,22 @@ export const usersQueryRepository = {
             items: transformedUsers
         }
     },
-    async getUser(id: string) {
-        const user = await usersCollection.findOne({ _id: new ObjectId(id) });
-
-        if (!user) return null;
-
-        // Формируем ViewModel и возвращаем назад в контроллер
-        return {
-            id: user._id.toString(), // конвертируем _id в id
-            login: user.login,
-            email: user.email,
-            createdAt: user.createdAt,
-        };
+    async getUsersWithPagination(
+        pageNumber: number,
+        pageSize: number,
+        sortBy: string,
+        sortDirection: 'asc' | 'desc',
+        filter: any
+    ) {
+        return await usersCollection
+            .find(filter)
+            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 } as any)
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray();
+    },
+    async getUsersCount(filter) {
+        return await usersCollection.countDocuments(filter);
     },
     async createUser(id: string) {
         const user = await usersCollection.findOne({ _id: new ObjectId(id) });

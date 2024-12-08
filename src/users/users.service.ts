@@ -4,21 +4,6 @@ import {UserType} from "./users.type";
 const bcrypt = require('bcrypt');
 
 export const usersService = {
-    async getUsers() {
-        return await usersRepository.getUsers();
-    },
-    async getUser(id: string) {
-        const user = await usersRepository.getUser(id);
-
-        if (!user) {
-            throw {
-                status: 404,
-                errorsMessages: [{ message: 'User not found' }]
-            };
-        }
-
-        return user._id.toString();
-    },
     async createUser(dto: Omit<UserType, 'createdAt'>) {
         const {login, password, email} = dto;
 
