@@ -251,7 +251,7 @@ describe('POST /{blogId}/posts', () => {
         }
 
         const res = await req
-            .post(`${SETTINGS.PATH.BLOGS}/${insertedBlogId}/posts`)
+            .post(`${SETTINGS.PATH.POSTS}/${insertedBlogId}/posts`)
             .set({ 'Authorization': 'Basic ' + codedAuth })
             .send(newPost)
             .expect(201);
@@ -274,7 +274,7 @@ describe('POST /{blogId}/posts', () => {
         }
 
         const res = await req
-            .post(`${SETTINGS.PATH.BLOGS}/${insertedBlogId}/posts`)
+            .post(`${SETTINGS.PATH.POSTS}/${insertedBlogId}/posts`)
             .set({ 'Authorization': 'Basic ' + codedAuth })
             .send(newPost)
             .expect(400);
@@ -296,7 +296,7 @@ describe('POST /{blogId}/posts', () => {
         }
 
         const res = await req
-            .post(`${SETTINGS.PATH.BLOGS}/${insertedBlogId}/posts`)
+            .post(`${SETTINGS.PATH.POSTS}/${insertedBlogId}/posts`)
             .send(newPost)
             .expect(401);
 

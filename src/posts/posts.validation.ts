@@ -18,8 +18,19 @@ export const contentValidate = body('content')
     .isString().withMessage('Content must be a string')
     .isLength({min: 1, max: 1000}).withMessage('Content must be between 1 and 1000 symbols');
 
+export const blogIdValidate = body('blogId')
+    .trim()
+    .notEmpty().withMessage('BlogId is required')
+    .isMongoId().withMessage('BlogId must be a valid MongoID')
+
 export const validatePostFields = [
     titleValidate,
     shortDescriptionValidate,
-    contentValidate
+    contentValidate,
+];
+export const validatePostFieldsWithBlogId = [
+    titleValidate,
+    shortDescriptionValidate,
+    contentValidate,
+    blogIdValidate
 ];
