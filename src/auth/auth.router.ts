@@ -4,4 +4,4 @@ import {AuthController} from "./auth.controller";
 export const authRouter = Router();
 
 authRouter.post('/login', AuthController.login);
-authRouter.post('/me', AuthController.me);
+authRouter.get('/me', AuthController.me);

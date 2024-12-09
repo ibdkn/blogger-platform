@@ -35,6 +35,24 @@ export const authService = {
             };
         }
     },
+    async getMe(token: string) {
+        const userId = await this.getUserIdByToken(token);
+        console.log(userId)
+        const user = await usersRepository.getUser(userId.toString());
+
+        if (!user) {
+            throw {
+                status: 404,
+                errorsMessages: [{field: 'login or email', message: 'User not found'}]
+            };
+        }
+
+        return {
+            email: user.email,
+            login: user.login,
+            userId: userId
+        }
+    },
     generateJWT(id: string): accessTokenType {
         const token = jwt.sign({userId: id}, SETTINGS.JWT_SECRET, {expiresIn: '1h'});
 
