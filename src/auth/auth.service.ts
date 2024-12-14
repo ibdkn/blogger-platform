@@ -13,18 +13,16 @@ export const authService = {
 
         if (user) {
             isValidPassword = await bcrypt.compare(password, user.password);
-
-            if (!isValidPassword) {
-                throw new DomainError(
-                    401,
-                    [{field: 'login or email', message: 'Invalid credentials'}]
-                );
-            }
-
-            return user;
         }
 
-        return null;
+        if (!isValidPassword) {
+            throw new DomainError(
+                401,
+                [{field: 'login or email', message: 'Invalid credentials'}]
+            );
+        }
+
+        return user;
     },
     async getUserIdByToken(token: string) {
         try {
