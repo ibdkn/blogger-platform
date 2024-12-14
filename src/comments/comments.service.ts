@@ -30,6 +30,7 @@ export const commentsService = {
         }
 
         const newComment = {
+            postId,
             content,
             commentatorInfo: {
                 userId,

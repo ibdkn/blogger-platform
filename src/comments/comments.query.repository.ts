@@ -42,7 +42,7 @@ export const commentsQueryRepository = {
         }
 
         const comments = await commentsCollection
-            .find({})
+            .find({postId})
             .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
