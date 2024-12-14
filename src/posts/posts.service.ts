@@ -3,6 +3,7 @@ import {PostType, PostViewModelType} from "./posts.types";
 import {blogsRepository} from "../blogs/blogs.repository";
 import {DeleteResult, InsertOneResult, UpdateResult, WithId} from "mongodb";
 import {BlogType} from "../blogs/blogs.types";
+import {DomainError} from "../common/types/error.types";
 
 export const postsService = {
     async createPostForSpecificBlog(
@@ -48,10 +49,10 @@ export const postsService = {
         const blog: WithId<BlogType> | null = await blogsRepository.getBlog(body.blogId);
 
         if (!blog) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Blog not found'}]
-            };
+            throw new DomainError(
+                404,
+                 [{message: 'Blog not found'}]
+            );
         }
 
         const newPost = {
@@ -67,7 +68,7 @@ export const postsService = {
 
         if (result.acknowledged) {
             return {
-                id: result.insertedId.toString(), // Convert ObjectId to string
+                id: result.insertedId.toString(),
                 title: newPost.title,
                 shortDescription: newPost.shortDescription,
                 content: newPost.content,

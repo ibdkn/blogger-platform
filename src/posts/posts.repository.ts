@@ -21,10 +21,10 @@ export const postsRepository = {
                 {_id: new ObjectId(id)},
                 {
                     $set: fields
-                })
+                });
     },
     async deletePost(id: string): Promise<DeleteResult> {
         return await postsCollection
-            .deleteOne({_id: new ObjectId(id)})
+            .deleteOne({_id: new ObjectId(id)});
     }
 }

@@ -37,7 +37,6 @@ export const authService = {
     },
     async getMe(token: string) {
         const userId = await this.getUserIdByToken(token);
-        console.log(userId)
         const user = await usersRepository.getUser(userId.toString());
 
         if (!user) {

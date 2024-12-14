@@ -38,7 +38,7 @@ export const usersController = {
 
             const userId: string = await usersService.createUser({login, password, email});
 
-            const newUser: UserViewModelType | null = await usersQueryRepository.createUser(userId);
+            const newUser: UserViewModelType | null = await usersQueryRepository.findUser(userId);
 
             res.status(201).send(newUser);
         } catch (e: any) {

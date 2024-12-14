@@ -8,6 +8,7 @@ export const SETTINGS = {
         BLOGS: '/blogs',
         POSTS: '/posts',
         USERS: '/users',
+        COMMENTS: '/comments',
         TESTING: '/testing/all-data',
     },
     MONGO_URL: process.env.MONGO_URL || 'mongodb://localhost:27017',

@@ -4,7 +4,7 @@ import {paginationQueries} from "../helpers/pagination.helper";
 import {PaginatedResult} from "../common/types/pagination.types";
 import {PostViewModelType} from "./posts.types";
 import {postsQueryRepository} from "./posts.query.repository";
-import {ValidationErrorType} from "../common/types/error.types";
+import {DomainError, ValidationErrorType} from "../common/types/error.types";
 import {validateObjectId} from "../helpers/validation.helper";
 
 export const postsController = {
@@ -106,8 +106,8 @@ export const postsController = {
             const newPost: PostViewModelType = await postsService.createPost(req.body);
             res.status(201).json(newPost);
         } catch (e: any) {
-            if (e.status) {
-                res.status(e.status).json({errorsMessages: e.errorsMessages});
+            if (e instanceof DomainError) {
+                res.status(e.status).json({ errorsMessages: e.errorMessages });
             } else {
                 console.error('Error occurred while fetching posts:', e);
                 res.status(500).json({message: 'Internal server error'});

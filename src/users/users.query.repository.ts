@@ -59,7 +59,7 @@ export const usersQueryRepository = {
             items: transformedUsers
         }
     },
-    async createUser(id: string): Promise<UserViewModelType | null> {
+    async findUser(id: string): Promise<UserViewModelType | null> {
         const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(id) });
 
         if (!user) return null;
