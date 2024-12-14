@@ -6,11 +6,11 @@ import {ValidationErrorType} from "../common/types/error.types";
 
 export const usersService = {
     async createUser(dto: Omit<UserType, 'createdAt'>): Promise<string> {
-        const {login, password, email} = dto;
+        const {login, passwordHash, email} = dto;
 
         const loginOrEmail: string = login || email
 
-        const existingUser: WithId<UserType> | null = await usersRepository.findUserByLoginOrEmail(loginOrEmail);
+        const existingUser: WithId<UserType> | null = await usersRepository.findByLoginOrEmail(loginOrEmail);
 
         if (existingUser) {
             const errorsMessages: ValidationErrorType[] = [];
@@ -25,16 +25,16 @@ export const usersService = {
         }
 
         const salt: string = await bcrypt.genSalt(10);
-        const hashedPassword: string = await bcrypt.hash(password, salt);
+        const hashedPassword: string = await bcrypt.hash(passwordHash, salt);
 
         const newUser = {
             login,
-            password: hashedPassword,
+            passwordHash: hashedPassword,
             email,
             createdAt: new Date().toISOString()
         }
 
-        const result: InsertOneResult<UserType> = await usersRepository.createUser(newUser);
+        const result = await usersRepository.createUser(newUser);
 
         return result.insertedId.toString();
     },

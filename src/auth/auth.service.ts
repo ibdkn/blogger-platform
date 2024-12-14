@@ -2,27 +2,63 @@ import {usersRepository} from "../users/users.repository";
 import {ObjectId} from "mongodb";
 import jwt from "jsonwebtoken";
 import {SETTINGS} from "../settings";
-import bcrypt from "bcrypt";
-import {accessTokenType, CustomJwtPayload} from "./auth.type";
-import {DomainError} from "../common/types/error.types";
+import {AccessTokenType, CustomJwtPayload} from "./auth.type";
+import {AppError, DomainError} from "../common/types/error.types";
+import {ResultStatus} from "../common/result/resultCode";
+import {bcryptService} from "../common/adapters/bcrypt.service";
+import {jwtService} from "../common/adapters/jwt.service";
+import {HttpStatuses} from "../common/types/httpStatuses";
 
 export const authService = {
-    async checkCredentials(loginOrEmail: string, password: string) {
-        const user = await usersRepository.findUserByLoginOrEmail(loginOrEmail);
-        let isValidPassword: boolean = false;
+    async loginUser(loginOrEmail: string, password: string) {
+        const result = await this.checkUserCredentials(loginOrEmail, password);
 
-        if (user) {
-            isValidPassword = await bcrypt.compare(password, user.password);
-        }
-
-        if (!isValidPassword) {
-            throw new DomainError(
-                401,
-                [{field: 'login or email', message: 'Invalid credentials'}]
+        if (result.status !== ResultStatus.Success) {
+            throw new AppError(
+                HttpStatuses.Unauthorized,
+                ResultStatus.Unauthorized,
+                [{ field: 'password', message: 'Wrong password' }],
+                null
             );
         }
 
-        return user;
+        const accessToken: string = await jwtService.createToken(result.data!._id.toString());
+
+        return {
+            status: ResultStatus.Success,
+            data: {accessToken},
+            extensions: []
+        }
+    },
+    async checkUserCredentials(loginOrEmail: string, password: string) {
+        const user = await usersRepository.findByLoginOrEmail(loginOrEmail);
+
+        if (!user) {
+            throw new AppError(
+                HttpStatuses.NotFound,
+                ResultStatus.NotFound,
+                [{field: 'loginOrEmail', message: 'Not Found'}],
+                null
+            );
+        }
+
+        // todo изменить тип на hashPassword
+        let isPasswordCorrect = await bcryptService.checkPassword(password, user.password);
+
+        if (!isPasswordCorrect) {
+            throw new AppError(
+                HttpStatuses.BadRequest,
+                ResultStatus.BadRequest,
+                [{field: 'password', message: 'Wrong password'}],
+                null
+            );
+        }
+
+        return {
+            status: ResultStatus.Success,
+            data: user,
+            extensions: []
+        };
     },
     async getUserIdByToken(token: string) {
         try {
@@ -52,11 +88,4 @@ export const authService = {
             userId: userId
         }
     },
-    generateJWT(id: string): accessTokenType {
-        const token = jwt.sign({userId: id}, SETTINGS.JWT_SECRET, {expiresIn: '1h'});
-
-        return {
-            accessToken: token
-        }
-    }
 }

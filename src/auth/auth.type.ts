@@ -1,5 +1,5 @@
 
-export type accessTokenType = {
+export type AccessTokenType = {
     accessToken: string
 }
 

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 export const ADMIN_AUTH = 'admin:qwerty';
 
-export const authBaseGuard = (req: Request, res: Response, next: NextFunction): void => {
+export const baseAuthGuard = (req: Request, res: Response, next: NextFunction): void => {
     const authHeader: string | undefined = req.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Basic ')) {

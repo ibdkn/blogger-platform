@@ -1,5 +1,5 @@
 import {SETTINGS} from "../src/settings";
-import {ADMIN_AUTH} from "../src/common/middlewares/authBase.guard";
+import {ADMIN_AUTH} from "../src/auth/guards/base.auth.guard";
 import {blogsCollection, runDb} from "../src/db/db";
 import {MongoMemoryServer} from "mongodb-memory-server";
 import {createTestBlog, req, setupTestData} from "./test-helpers";

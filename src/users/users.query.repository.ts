@@ -59,6 +59,19 @@ export const usersQueryRepository = {
             items: transformedUsers
         }
     },
+    async findById(id: string): Promise<UserViewModelType | null> {
+        const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(id) });
+
+        if (!user) return null;
+
+        return {
+            id: user._id.toString(),
+            login: user.login,
+            email: user.email,
+            createdAt: user.createdAt,
+        };
+    },
+    // todo выпилить потом, как отрефакторим users
     async findUser(id: string): Promise<UserViewModelType | null> {
         const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(id) });
 

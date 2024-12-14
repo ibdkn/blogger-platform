@@ -1,6 +1,6 @@
 import {SETTINGS} from "../src/settings";
 import {req, setupTestData} from "./test-helpers";
-import {ADMIN_AUTH} from "../src/common/middlewares/authBase.guard";
+import {ADMIN_AUTH} from "../src/auth/guards/base.auth.guard";
 import {blogsCollection, postsCollection, runDb} from "../src/db/db";
 import {MongoMemoryServer} from "mongodb-memory-server";
 
