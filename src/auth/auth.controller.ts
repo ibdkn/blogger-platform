@@ -1,6 +1,7 @@
 import {Request, Response} from "express";
 import {authService} from "./auth.service";
 import {accessTokenType} from "./auth.type";
+import {DomainError} from "../common/types/error.types";
 
 export const AuthController = {
     async login(req: Request, res: Response): Promise<void> {
@@ -11,14 +12,14 @@ export const AuthController = {
             if (user) {
                 const accessToken: accessTokenType = authService.generateJWT(user._id.toString());
 
-                res.status(201).send(accessToken);
+                res.status(200).send(accessToken);
             }
         } catch (e: any) {
-            if (e.status) {
-                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+            if (e instanceof DomainError) {
+                res.status(e.status).json({ errorsMessages: e.errorMessages });
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({ message: 'Internal server error' });
+                res.status(500).json({message: 'Internal server error'});
             }
         }
     },
@@ -34,11 +35,11 @@ export const AuthController = {
                 res.status(401).send({message: 'Unauthorized'});
             }
         } catch (e: any) {
-            if (e.status) {
-                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+            if (e instanceof DomainError) {
+                res.status(e.status).json({ errorsMessages: e.errorMessages });
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({ message: 'Internal server error' });
+                res.status(500).json({message: 'Internal server error'});
             }
         }
     }

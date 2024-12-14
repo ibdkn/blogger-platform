@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import {SETTINGS} from "../settings";
 import bcrypt from "bcrypt";
 import {accessTokenType, CustomJwtPayload} from "./auth.type";
+import {DomainError} from "../common/types/error.types";
 
 export const authService = {
     async checkCredentials(loginOrEmail: string, password: string) {
@@ -12,14 +13,15 @@ export const authService = {
 
         if (user) {
             isValidPassword = await bcrypt.compare(password, user.password);
-            return user;
-        }
 
-        if (!isValidPassword) {
-            throw {
-                status: 401,
-                errorsMessages: [{field: 'login or email', message: 'Invalid credentials'}]
-            };
+            if (!isValidPassword) {
+                throw new DomainError(
+                    401,
+                    [{field: 'login or email', message: 'Invalid credentials'}]
+                );
+            }
+
+            return user;
         }
 
         return null;
@@ -29,10 +31,10 @@ export const authService = {
             const result: CustomJwtPayload = jwt.verify(token, SETTINGS.JWT_SECRET) as CustomJwtPayload;
             return new ObjectId(result.userId)
         } catch (e: any) {
-            throw {
-                status: 401,
-                errorsMessages: [{ field: 'token', message: 'Invalid or expired token' }]
-            };
+            throw new DomainError(
+                401,
+                [{ field: 'token', message: 'Invalid or expired token' }]
+            );
         }
     },
     async getMe(token: string) {
@@ -40,10 +42,10 @@ export const authService = {
         const user = await usersRepository.getUser(userId.toString());
 
         if (!user) {
-            throw {
-                status: 404,
-                errorsMessages: [{field: 'login or email', message: 'User not found'}]
-            };
+            throw new DomainError(
+                404,
+                [{field: 'login or email', message: 'User not found'}]
+            );
         }
 
         return {
