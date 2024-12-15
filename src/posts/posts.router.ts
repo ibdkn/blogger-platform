@@ -12,7 +12,7 @@ export const postsRouter: Router = Router();
 postsRouter.get('/', postsController.getPosts);
 postsRouter.get('/:id', postsController.getPost);
 postsRouter.get('/:postId/comments', commentsController.getComments);
-postsRouter.post('/', baseAuthGuard, ...postFieldValidation, inputValidation, postsController.createPost);
+postsRouter.post('/', baseAuthGuard, ...postFieldValidationWithBlogId, inputValidation, postsController.createPost);
 postsRouter.post('/:postId/comments', accessTokenGuard, ...commentFieldsValidation, inputValidation, commentsController.createComment);
 postsRouter.put('/:id', baseAuthGuard, ...postFieldValidationWithBlogId, inputValidation, postsController.updatePost);
 postsRouter.delete('/:id', baseAuthGuard, postsController.deletePost);

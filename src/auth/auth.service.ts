@@ -44,13 +44,12 @@ export const authService = {
             );
         }
 
-        // todo изменить тип на hashPassword
         let isPasswordCorrect: boolean = await bcryptService.checkPassword(password, user.passwordHash);
 
         if (!isPasswordCorrect) {
             throw new AppError(
-                ResultStatus.BadRequest,
-                'Bad Request',
+                ResultStatus.Unauthorized,
+                'Unauthorized',
                 [{field: 'password', message: 'Wrong password'}],
                 null
             );

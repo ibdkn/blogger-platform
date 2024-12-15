@@ -71,7 +71,7 @@ export const commentsController = {
             const newCommentId: string = await commentsService.create(userId, req.params.postId, req.body.content);
             const newComment: CommentViewType  = await commentsQueryRepository.getById(newCommentId) as CommentViewType;
 
-            res.status(resultCodeToHttpException(ResultStatus.Success)).json(newComment);
+            res.status(resultCodeToHttpException(ResultStatus.Created)).json(newComment);
         } catch (e: any) {
             if (e.status) {
                 res.status(e.status).json({errorsMessages: e.errorsMessages});
