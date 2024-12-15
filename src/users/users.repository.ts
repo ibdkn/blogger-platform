@@ -16,9 +16,4 @@ export const usersRepository = {
     async delete(id: string): Promise<DeleteResult> {
         return await usersCollection.deleteOne({_id: new ObjectId(id)});
     },
-
-    // todo выпилить после рефакторинга comments
-    async getUser(id: string): Promise<WithId<UserDBType> | null> {
-        return await usersCollection.findOne({_id: new ObjectId(id)});
-    },
 }

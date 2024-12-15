@@ -61,16 +61,4 @@ export const authService = {
             data: user
         };
     },
-    // todo выпилить потом + удалить auth.type.ts
-    async getUserIdByToken(token: string) {
-        try {
-            const result: CustomJwtPayload = jwt.verify(token, SETTINGS.JWT_SECRET) as CustomJwtPayload;
-            return new ObjectId(result.userId)
-        } catch (e: any) {
-            throw new DomainError(
-                401,
-                [{ field: 'token', message: 'Invalid or expired token' }]
-            );
-        }
-    }
 }
