@@ -37,9 +37,9 @@ export const authService = {
 
         if (!user) {
             throw new AppError(
-                ResultStatus.NotFound,
-                'Not Found',
-                [{field: 'loginOrEmail', message: 'Not Found'}],
+                ResultStatus.Unauthorized,
+                'Unauthorized',
+                [{field: 'loginOrEmail', message: 'Wrong loginOrEmail'}],
                 null
             );
         }
