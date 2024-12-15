@@ -2,9 +2,8 @@ import {Collection, MongoClient} from 'mongodb';
 import {BlogType} from "../blogs/blogs.types";
 import {PostType} from "../posts/posts.types";
 import {SETTINGS} from "../settings";
-import {UserType} from "../users/users.type";
-import {CommentType} from "../comments/comments.type";
 import {UserDBType} from "../users/types/user.db.type";
+import {CommentType} from "../comments/types/commment.type";
 
 export let blogsCollection: Collection<BlogType>;
 export let postsCollection: Collection<PostType>;

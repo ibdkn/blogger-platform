@@ -1,17 +1,23 @@
 import {commentsCollection, postsCollection, usersCollection} from "../db/db";
 import {ObjectId, WithId} from "mongodb";
 import {UserType} from "../users/users.type";
+import {CommentType, CommentViewType} from "./types/commment.type";
+import {AppError} from "../common/types/error.types";
+import {ResultStatus} from "../common/result/resultCode";
+import {PostType} from "../posts/posts.types";
+import {PaginationType} from "../common/types/pagination.types";
 
 export const commentsQueryRepository = {
-    async getComment(id: string) {
-        const comment = await commentsCollection
-            .findOne({_id: new ObjectId(id)});
+    async getById(id: string): Promise<CommentViewType | null> {
+        const comment: WithId<CommentType> | null = await commentsCollection.findOne({_id: new ObjectId(id)});
 
         if (!comment) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Comment not found'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Comment not found'}],
+                null
+            );
         }
 
         return {
@@ -24,24 +30,25 @@ export const commentsQueryRepository = {
             createdAt: comment.createdAt,
         };
     },
-    async getComments(
+    async getAllComments(
         postId: string,
         pageNumber: number,
         pageSize: number,
         sortBy: string,
         sortDirection: 'asc' | 'desc'
-    ) {
-        const post = await postsCollection
-            .findOne({_id: new ObjectId(postId)});
+    ): Promise<PaginationType<CommentViewType>> {
+        const post: PostType | null = await postsCollection.findOne({_id: new ObjectId(postId)});
 
         if (!post) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Post with the given postId does not exist'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Post with the given postId does not exist'}],
+                null
+            );
         }
 
-        const comments = await commentsCollection
+        const comments: WithId<CommentType>[] | null = await commentsCollection
             .find({postId})
             .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
             .skip((pageNumber - 1) * pageSize)
@@ -60,7 +67,7 @@ export const commentsQueryRepository = {
 
         const commentsCount: number = await commentsCollection.countDocuments({postId});
 
-        const transformedComments = comments.map(comment => ({
+        const transformedComments: CommentViewType[] = comments.map(comment => ({
             id: comment._id.toString(),
             content: comment.content,
             commentatorInfo: {
@@ -78,20 +85,4 @@ export const commentsQueryRepository = {
             items: transformedComments
         }
     },
-    async createComment(id: string) {
-        const comment = await commentsCollection
-            .findOne({ _id: new ObjectId(id) });
-
-        if (!comment) return null;
-
-        return {
-            id: comment._id.toString(),
-            content: comment.content,
-            commentatorInfo: {
-                userId: comment.commentatorInfo.userId,
-                userLogin: comment.commentatorInfo.userLogin
-            },
-            createdAt: comment.createdAt,
-        };
-    }
 }

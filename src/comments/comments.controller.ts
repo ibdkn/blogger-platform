@@ -1,31 +1,35 @@
 import {Request, Response} from "express";
 import {commentsService} from "./comments.service";
-import {DomainError, ValidationErrorType} from "../common/types/error.types";
+import {AppError, ValidationErrorType} from "../common/types/error.types";
 import {validateObjectId} from "../helpers/validation.helper";
 import {commentsQueryRepository} from "./comments.query.repository";
 import {paginationQueries} from "../helpers/pagination.helper";
-import {postsService} from "../posts/posts.service";
+import {resultCodeToHttpException} from "../common/result/resultCodeToHttpException";
+import {ResultStatus} from "../common/result/resultCode";
+import {CommentViewType} from "./types/commment.type";
+import {PaginationType} from "../common/types/pagination.types";
 
 export const commentsController = {
-    async getComment(req: Request, res: Response) {
+    async getComment(req: Request, res: Response): Promise<void> {
         try {
             const {id} = req.params;
             const errorsMessages: ValidationErrorType[] = validateObjectId(id);
 
             if (errorsMessages.length > 0) {
-                res.status(400).json({ errorsMessages });
+                res.status(resultCodeToHttpException(ResultStatus.BadRequest)).json({errorsMessages});
                 return;
             }
 
-            const comment = await commentsQueryRepository.getComment(id);
+            const comment: CommentViewType | null = await commentsQueryRepository.getById(id);
 
-            res.status(200).json(comment);
+            res.status(resultCodeToHttpException(ResultStatus.Success)).json(comment);
         } catch (e: any) {
-            if (e.status) {
-                res.status(e.status).json({errorsMessages: e.errorsMessages});
+            if (e instanceof AppError) {
+                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({message: 'Internal server error'});
+                res.status(resultCodeToHttpException(ResultStatus.InternalServerError))
+                    .send({message: 'Internal Server Error'});
             }
         }
     },
@@ -35,7 +39,7 @@ export const commentsController = {
             const errorsMessages: ValidationErrorType[] = validateObjectId(postId);
 
             if (errorsMessages.length > 0) {
-                res.status(400).json({ errorsMessages });
+                res.status(resultCodeToHttpException(ResultStatus.BadRequest)).json({errorsMessages});
                 return;
             }
 
@@ -46,9 +50,10 @@ export const commentsController = {
                 sortDirection,
             } = paginationQueries(req);
 
-            const comments= await commentsQueryRepository.getComments(postId, pageNumber, pageSize, sortBy, sortDirection);
+            const comments: PaginationType<CommentViewType> = await commentsQueryRepository
+                .getAllComments(postId, pageNumber, pageSize, sortBy, sortDirection);
 
-            res.status(200).json(comments);
+            res.status(resultCodeToHttpException(ResultStatus.Success)).json(comments);
         } catch (e: any) {
             if (e.status) {
                 res.status(e.status).json({errorsMessages: e.errorsMessages});
@@ -60,16 +65,12 @@ export const commentsController = {
     },
     async createComment(req: Request, res: Response): Promise<void> {
         try {
-            const authHeader = req.headers.authorization;
+            const userId: string = req.user?.id as string;
 
-            if (authHeader) {
-                const token = authHeader.split(' ')[1];
-                const newCommentId = await commentsService.createComment(req.params.postId, req.body.content, token);
-                const newComment = await commentsQueryRepository.createComment(newCommentId);
-                res.status(201).json(newComment);
-            } else {
-                res.status(401).send({message: 'Unauthorized'});
-            }
+            const newCommentId: string = await commentsService.create(userId, req.params.postId, req.body.content);
+            const newComment: CommentViewType  = await commentsQueryRepository.getById(newCommentId) as CommentViewType;
+
+            res.status(resultCodeToHttpException(ResultStatus.Success)).json(newComment);
         } catch (e: any) {
             if (e.status) {
                 res.status(e.status).json({errorsMessages: e.errorsMessages});
@@ -81,55 +82,47 @@ export const commentsController = {
     },
     async updateComment(req: Request, res: Response): Promise<void> {
         try {
-            const {id} = req.params;
+            const userId: string = req.user?.id as string;
+            const {id, content} = req.params;
             const errorsMessages: ValidationErrorType[] = validateObjectId(id);
 
             if (errorsMessages.length > 0) {
-                res.status(400).json({ errorsMessages });
+                res.status(resultCodeToHttpException(ResultStatus.BadRequest)).json({errorsMessages});
                 return;
             }
 
-            const authHeader = req.headers.authorization;
-            if (authHeader) {
-                const token = authHeader.split(' ')[1];
-                await commentsService.updateComment(id, req.body.content, token);
-                res.status(204).json();
-            } else {
-                res.status(401)
-            }
+            await commentsService.update(userId, id, content);
+            res.status(resultCodeToHttpException(ResultStatus.NoContent)).send();
         } catch (e: any) {
-            if (e instanceof DomainError) {
-                res.status(e.status).json({ errorsMessages: e.errorMessages });
+            if (e instanceof AppError) {
+                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({message: 'Internal server error'});
+                res.status(resultCodeToHttpException(ResultStatus.InternalServerError))
+                    .send({message: 'Internal Server Error'});
             }
         }
     },
     async deleteComment(req: Request, res: Response): Promise<void> {
         try {
+            const userId: string = req.user?.id as string;
             const {id} = req.params;
             const errorsMessages: ValidationErrorType[] = validateObjectId(id);
 
             if (errorsMessages.length > 0) {
-                res.status(400).json({ errorsMessages });
+                res.status(resultCodeToHttpException(ResultStatus.BadRequest)).json({errorsMessages});
                 return;
             }
 
-            const authHeader = req.headers.authorization;
-            if (authHeader) {
-                const token = authHeader.split(' ')[1];
-                await commentsService.deleteComment(id, token);
-                res.status(204).json();
-            } else {
-                res.status(401);
-            }
+            await commentsService.delete(userId, id);
+            res.status(resultCodeToHttpException(ResultStatus.NoContent)).send();
         } catch (e: any) {
-            if (e instanceof DomainError) {
-                res.status(e.status).json({ errorsMessages: e.errorMessages });
+            if (e instanceof AppError) {
+                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({message: 'Internal server error'});
+                res.status(resultCodeToHttpException(ResultStatus.InternalServerError))
+                    .send({message: 'Internal Server Error'});
             }
         }
     }

@@ -84,7 +84,7 @@ export const postsService = {
         }
     },
     async updatePost(id: string, body: PostType): Promise<void> {
-        const post: WithId<PostType> | null = await postsRepository.getPost(id);
+        const post: WithId<PostType> | null = await postsRepository.getById(id);
 
         if (!post) {
             throw {
@@ -119,7 +119,7 @@ export const postsService = {
         }
     },
     async deletePost(id: string): Promise<void> {
-        const post: WithId<PostType> | null = await postsRepository.getPost(id);
+        const post: WithId<PostType> | null = await postsRepository.getById(id);
 
         if (!post) {
             throw {

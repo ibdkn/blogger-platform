@@ -3,7 +3,7 @@ import {postsCollection} from "../db/db";
 import {DeleteResult, InsertOneResult, ObjectId, UpdateResult, WithId} from "mongodb";
 
 export const postsRepository = {
-    async getPost(id: string): Promise<WithId<PostType> | null> {
+    async getById(id: string): Promise<WithId<PostType> | null> {
         return await postsCollection
             .findOne({_id: new ObjectId(id)});
     },

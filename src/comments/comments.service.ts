@@ -1,35 +1,38 @@
-import {CommentType} from "./comments.type";
 import {commentsRepository} from "./comments.repository";
 import {postsRepository} from "../posts/posts.repository";
-import {authService} from "../auth/auth.service";
 import {usersRepository} from "../users/users.repository";
 import {DeleteResult, UpdateResult, WithId} from "mongodb";
-import {DomainError} from "../common/types/error.types";
+import {AppError} from "../common/types/error.types";
+import {ResultStatus} from "../common/result/resultCode";
+import {CommentType, CommentTypeWithPostId} from "./types/commment.type";
+import {UserDBType} from "../users/types/user.db.type";
 import {PostType} from "../posts/posts.types";
 
 export const commentsService = {
-    async createComment(postId: string, content: string, token: string) {
-        const post = await postsRepository.getPost(postId);
+    async create(userId: string, postId: string, content: string): Promise<string> {
+        const post: WithId<PostType> | null = await postsRepository.getById(postId);
 
         if (!post) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Post not found'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Post with the given postId does not exist'}],
+                null
+            );
         }
 
-        const userId = await authService.getUserIdByToken(token);
-
-        const user = await usersRepository.getUser(userId.toString());
+        const user: WithId<UserDBType> | null = await usersRepository.doesExistById(userId);
 
         if (!user) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'User not found'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'User not found',
+                [{ message: 'User not found' }],
+                null
+            );
         }
 
-        const newComment = {
+        const newComment: CommentTypeWithPostId = {
             postId,
             content,
             commentatorInfo: {
@@ -39,81 +42,92 @@ export const commentsService = {
             createdAt: new Date().toISOString()
         }
 
-        const result = await commentsRepository.createComment(newComment);
-        return result.insertedId.toString();
+        return await commentsRepository.create(newComment);
     },
-    async updateComment(id: string, content: string, token: string) {
-        const comment = await commentsRepository.getComment(id);
+    async update(userId: string, id: string, content: string): Promise<void> {
+        const comment: WithId<CommentType> | null = await commentsRepository.getById(id);
 
         if (!comment) {
-            throw new DomainError(
-                404,
-                [{message: 'Comment not found'}]
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{ message: 'Comment not found' }],
+                null
             );
         }
 
-        const userId = await authService.getUserIdByToken(token);
-        const user = await usersRepository.getUser(userId.toString());
+        const user: UserDBType | null = await usersRepository.doesExistById(userId);
 
         if (!user) {
-            throw new DomainError(
-                404,
-                [{message: 'User not found'}]
+            throw new AppError(
+                ResultStatus.NotFound,
+                'User not found',
+                [{ message: 'User not found' }],
+                null
             );
         }
 
-        if (comment.commentatorInfo.userId.toString() !== userId.toString()) {
-            throw new DomainError(
-                403,
-                [{message: 'You can only edit your own comments'}]
+        if (comment.commentatorInfo.userId.toString() !== userId) {
+            throw new AppError(
+                ResultStatus.Forbidden,
+                'Forbidden',
+                [{ message: 'You can only edit your own comments' }],
+                null
             );
         }
 
         const updatedField: Pick<CommentType, 'content'> = { content };
-        const result: UpdateResult = await commentsRepository.updateComment(id, updatedField);
+        const result: UpdateResult = await commentsRepository.update(id, updatedField);
 
         if (result.matchedCount === 0) {
-            throw new DomainError(
-                500,
-                [{message: 'Failed to update the post'}]
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{ message: 'Failed to update the post' }],
+                null
             );
         }
     },
-    async deleteComment(id: string, token: string) {
-        const comment = await commentsRepository.getComment(id);
-
-        console.log(comment)
+    async delete(userId: string, id: string): Promise<void> {
+        const comment: WithId<CommentType> | null = await commentsRepository.getById(id);
 
         if (!comment) {
-            throw new DomainError(
-                404,
-                [{message: 'Comment not found'}]
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{ message: 'Comment not found' }],
+                null
             );
         }
 
-        const userId = await authService.getUserIdByToken(token);
-        const user = await usersRepository.getUser(userId.toString());
+        const user: WithId<UserDBType> | null = await usersRepository.doesExistById(userId);
 
         if (!user) {
-            throw new DomainError(
-                404,
-                [{message: 'User not found'}]
+            throw new AppError(
+                ResultStatus.NotFound,
+                'User not found',
+                [{ message: 'User not found' }],
+                null
             );
         }
 
-        if (comment.commentatorInfo.userId.toString() !== userId.toString()) {
-            throw new DomainError(
-                403,
-                [{message: 'You can only edit your own comments'}]
+        if (comment.commentatorInfo.userId.toString() !== userId) {
+            throw new AppError(
+                ResultStatus.Forbidden,
+                'Forbidden',
+                [{ message: 'You can only edit your own comments' }],
+                null
             );
         }
 
-        const result: DeleteResult = await commentsRepository.deleteComment(id);
+        const result: DeleteResult = await commentsRepository.delete(id);
 
         if (result.deletedCount === 0) {
-            throw new DomainError(
-                404,
-                [{message: 'Comment was not deleted'}]
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{ message: 'Comment was not deleted' }],
+                null
             );
         }
     }

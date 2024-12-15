@@ -1,27 +1,19 @@
-import {commentsCollection, postsCollection} from "../db/db";
-import {DeleteResult, ObjectId, UpdateResult} from "mongodb";
-import {PostType} from "../posts/posts.types";
-import {CommentType} from "./comments.type";
+import {commentsCollection} from "../db/db";
+import {DeleteResult, InsertOneResult, ObjectId, UpdateResult, WithId} from "mongodb";
+import {CommentType, CommentTypeWithPostId} from "./types/commment.type";
 
 export const commentsRepository = {
-    async getComment(id: string) {
-        return await commentsCollection
-            .findOne({_id: new ObjectId(id)});
+    async getById(id: string): Promise<WithId<CommentType> | null> {
+        return await commentsCollection.findOne({_id: new ObjectId(id)});
     },
-    async createComment(newComment: any) {
-        return await commentsCollection
-            .insertOne(newComment);
+    async create(newComment: CommentTypeWithPostId): Promise<string> {
+        const result: InsertOneResult<CommentTypeWithPostId> = await commentsCollection.insertOne(newComment);
+        return result.insertedId.toString();
     },
-    async updateComment(id: string, field: Pick<CommentType, 'content'>): Promise<UpdateResult> {
-        return await commentsCollection
-            .updateOne(
-                {_id: new ObjectId(id)},
-                {
-                    $set: field
-                })
+    async update(id: string, field: Pick<CommentType, 'content'>): Promise<UpdateResult> {
+        return await commentsCollection.updateOne({_id: new ObjectId(id)}, {$set: field});
     },
-    async deleteComment(id: string):Promise<DeleteResult> {
-        return await commentsCollection
-            .deleteOne({_id: new ObjectId(id)})
+    async delete(id: string): Promise<DeleteResult> {
+        return await commentsCollection.deleteOne({_id: new ObjectId(id)})
     }
 }
