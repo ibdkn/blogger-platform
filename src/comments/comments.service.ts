@@ -7,6 +7,7 @@ import {ResultStatus} from "../common/result/resultCode";
 import {CommentType, CommentTypeWithPostId} from "./types/commment.type";
 import {UserDBType} from "../users/types/user.db.type";
 import {PostType} from "../posts/posts.types";
+import {loginValidation} from "../users/midlewares/login.valitation";
 
 export const commentsService = {
     async create(userId: string, postId: string, content: string): Promise<string> {
@@ -77,6 +78,7 @@ export const commentsService = {
         }
 
         const updatedField: Pick<CommentType, 'content'> = { content };
+        console.log(updatedField);
         const result: UpdateResult = await commentsRepository.update(id, updatedField);
 
         if (result.matchedCount === 0) {

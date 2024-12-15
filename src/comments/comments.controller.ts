@@ -94,7 +94,7 @@ export const commentsController = {
                 return;
             }
 
-            await commentsService.update(userId, id, content);
+            await commentsService.update(userId, id, req.body.content);
             res.status(resultCodeToHttpException(ResultStatus.NoContent)).send();
         } catch (e: any) {
             if (e instanceof AppError) {
