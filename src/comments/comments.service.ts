@@ -104,8 +104,8 @@ export const commentsService = {
 
         if (!user) {
             throw new AppError(
-                ResultStatus.NotFound,
-                'User not found',
+                ResultStatus.Unauthorized,
+                'Unauthorized',
                 [{ message: 'User not found' }],
                 null
             );

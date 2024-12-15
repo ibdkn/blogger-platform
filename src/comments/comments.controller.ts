@@ -56,11 +56,12 @@ export const commentsController = {
 
             res.status(resultCodeToHttpException(ResultStatus.Success)).json(comments);
         } catch (e: any) {
-            if (e.status) {
-                res.status(e.status).json({errorsMessages: e.errorsMessages});
+            if (e instanceof AppError) {
+                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({message: 'Internal server error'});
+                res.status(resultCodeToHttpException(ResultStatus.InternalServerError))
+                    .send({message: 'Internal Server Error'});
             }
         }
     },
@@ -73,11 +74,12 @@ export const commentsController = {
 
             res.status(resultCodeToHttpException(ResultStatus.Created)).json(newComment);
         } catch (e: any) {
-            if (e.status) {
-                res.status(e.status).json({errorsMessages: e.errorsMessages});
+            if (e instanceof AppError) {
+                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({message: 'Internal server error'});
+                res.status(resultCodeToHttpException(ResultStatus.InternalServerError))
+                    .send({message: 'Internal Server Error'});
             }
         }
     },
