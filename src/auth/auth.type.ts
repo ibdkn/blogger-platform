@@ -1,4 +1,4 @@
-
+// todo выпилить
 export type AccessTokenType = {
     accessToken: string
 }

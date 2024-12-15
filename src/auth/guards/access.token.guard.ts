@@ -2,6 +2,8 @@ import { Response, NextFunction } from 'express';
 import {usersRepository} from "../../users/users.repository";
 import {jwtService} from "../../common/adapters/jwt.service";
 import {HttpStatuses} from "../../common/types/httpStatuses";
+import {TokenPayload} from "../types/token.payload.type";
+import {UserType} from "../../users/users.type";
 
 export const accessTokenGuard = async (req: any, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
@@ -16,12 +18,12 @@ export const accessTokenGuard = async (req: any, res: Response, next: NextFuncti
         return res.status(HttpStatuses.Unauthorized).json({ message: 'Authorization header is missing' });
     }
 
-    const payload = await jwtService.verifyToken(token);
+    const payload: TokenPayload | null = await jwtService.verifyToken(token);
 
     if (payload) {
-        const userId = payload.toString();
+        const {userId} = payload;
 
-        const user = await usersRepository.doesExistById(userId);
+        const user: UserType | null = await usersRepository.doesExistById(userId);
 
         if (!user) {
             return res.status(HttpStatuses.Unauthorized).json({ message: 'Invalid token' });
@@ -30,5 +32,6 @@ export const accessTokenGuard = async (req: any, res: Response, next: NextFuncti
 
         return next();
     }
+
     return res.status(HttpStatuses.Unauthorized).json({ message: 'Invalid or expired token' });
 };

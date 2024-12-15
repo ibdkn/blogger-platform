@@ -4,8 +4,31 @@ import {usersRepository} from "./users.repository";
 import {BlogViewModelType} from "../blogs/blogs.types";
 import {UserType, UserTypeWithoutPassword, UserViewModelType} from "./users.type";
 import {PaginatedResult} from "../common/types/pagination.types";
+import {AppError} from "../common/types/error.types";
+import {HttpStatuses} from "../common/types/httpStatuses";
+import {ResultStatus} from "../common/result/resultCode";
 
 export const usersQueryRepository = {
+    async findById(id: string): Promise<UserViewModelType | null> {
+        const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(id) });
+
+        if (!user) {
+            throw new AppError(
+                HttpStatuses.NotFound,
+                'Not Found',
+                [{ field: 'password', message: 'User not found' }],
+                null
+            );
+        }
+
+        return {
+            id: user._id.toString(),
+            login: user.login,
+            email: user.email,
+            createdAt: user.createdAt,
+        };
+    },
+    // todo переименовать потом в getAll
     async getUsers(
         pageNumber: number,
         pageSize: number,
@@ -58,18 +81,6 @@ export const usersQueryRepository = {
             totalCount: usersCount,
             items: transformedUsers
         }
-    },
-    async findById(id: string): Promise<UserViewModelType | null> {
-        const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(id) });
-
-        if (!user) return null;
-
-        return {
-            id: user._id.toString(),
-            login: user.login,
-            email: user.email,
-            createdAt: user.createdAt,
-        };
     },
     // todo выпилить потом, как отрефакторим users
     async findUser(id: string): Promise<UserViewModelType | null> {

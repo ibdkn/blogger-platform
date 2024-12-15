@@ -3,11 +3,15 @@ import {UserType} from "./users.type";
 import {ObjectId, WithId} from "mongodb";
 
 export const usersRepository = {
-    async getUser(id: string): Promise<WithId<UserType> | null> {
+    async doesExistById(id: string): Promise<WithId<UserType> | null> {
         return await usersCollection
             .findOne({_id: new ObjectId(id)});
     },
-    async doesExistById(id: string) {
+
+
+
+
+    async getUser(id: string): Promise<WithId<UserType> | null> {
         return await usersCollection
             .findOne({_id: new ObjectId(id)});
     },

@@ -21,11 +21,11 @@ export class DomainError extends Error {
 
 export class AppError extends Error {
     status: HttpStatuses;
-    message: ResultStatus;
+    message: string;
     extensions: ExtensionType[];
     data: any
 
-    constructor(status: HttpStatuses, message: ResultStatus, extensions: ExtensionType[], data: any = null) {
+    constructor(status: HttpStatuses, message: string, extensions: ExtensionType[], data: any = null) {
         super();
         this.status = status;
         this.message = message;

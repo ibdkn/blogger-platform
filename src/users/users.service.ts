@@ -6,7 +6,7 @@ import {ValidationErrorType} from "../common/types/error.types";
 
 export const usersService = {
     async createUser(dto: Omit<UserType, 'createdAt'>): Promise<string> {
-        const {login, passwordHash, email} = dto;
+        const {login, password, email} = dto;
 
         const loginOrEmail: string = login || email
 
@@ -25,7 +25,7 @@ export const usersService = {
         }
 
         const salt: string = await bcrypt.genSalt(10);
-        const hashedPassword: string = await bcrypt.hash(passwordHash, salt);
+        const hashedPassword: string = await bcrypt.hash(password, salt);
 
         const newUser = {
             login,

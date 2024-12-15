@@ -36,7 +36,7 @@ export const usersController = {
         try {
             const {login, password, email} = req.body;
 
-            const userId: string = await usersService.createUser({login, passwordHash: password, email});
+            const userId: string = await usersService.createUser({login, password: password, email});
 
             const newUser: UserViewModelType | null = await usersQueryRepository.findUser(userId);
 
