@@ -1,5 +1,5 @@
-import {body} from 'express-validator';
-import {blogsRepository} from "../blogs/blogs.repository";
+import {body} from "express-validator";
+import {blogsRepository} from "../../blogs/blogs.repository";
 
 export const titleValidate = body('title')
     .trim()
@@ -24,27 +24,19 @@ export const blogIdValidate = body('blogId')
     .notEmpty().withMessage('BlogId is required')
     .isMongoId().withMessage('BlogId must be a valid MongoID')
     .custom(async (value) => {
-        const blog = await blogsRepository.getBlog(value);
+        const blog = await blogsRepository.findById(value);
         if (!blog) {
             throw new Error('Blog not found');
         }
         return true;
     })
 
-export const commentContentValidate = body('content')
-    .trim()
-    .notEmpty().withMessage('Content is required')
-    .isString().withMessage('Content must be a string')
-    .isLength({min: 20, max: 300}).withMessage('Content must be between 1 and 1000 symbols');
-
-export const validatePostFields = [
+export const postFieldValidation = [
     titleValidate,
     shortDescriptionValidate,
-    contentValidate,
+    contentValidate
 ];
-export const validatePostFieldsWithBlogId = [
-    titleValidate,
-    shortDescriptionValidate,
-    contentValidate,
+export const postFieldValidationWithBlogId = [
+    ...postFieldValidation,
     blogIdValidate
 ];

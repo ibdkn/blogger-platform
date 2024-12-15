@@ -4,27 +4,20 @@ import {DeleteResult, InsertOneResult, ObjectId, UpdateResult, WithId} from "mon
 
 export const postsRepository = {
     async getById(id: string): Promise<WithId<PostType> | null> {
-        return await postsCollection
-            .findOne({_id: new ObjectId(id)});
+        return await postsCollection.findOne({_id: new ObjectId(id)});
     },
-    async createPost(newPost: PostType): Promise<InsertOneResult> {
-        return await postsCollection
-            .insertOne(newPost);
+    async create(newPost: PostType): Promise<string> {
+        const result: InsertOneResult<PostType> = await postsCollection.insertOne(newPost);
+        return result.insertedId.toString();
     },
-    async createPostForSpecificBlog(post: PostType): Promise<InsertOneResult> {
-        return await postsCollection
-            .insertOne(post);
+    async createForSpecificBlog(post: PostType): Promise<string> {
+        const result: InsertOneResult<PostType> = await postsCollection.insertOne(post);
+        return result.insertedId.toString();
     },
-    async updatePost(id: string, fields: Omit<PostType, 'blogName' | 'createdAt'>): Promise<UpdateResult>  {
-        return await postsCollection
-            .updateOne(
-                {_id: new ObjectId(id)},
-                {
-                    $set: fields
-                });
+    async update(id: string, fields: Omit<PostType, 'blogName' | 'createdAt'>): Promise<UpdateResult>  {
+        return await postsCollection.updateOne({_id: new ObjectId(id)}, {$set: fields});
     },
-    async deletePost(id: string): Promise<DeleteResult> {
-        return await postsCollection
-            .deleteOne({_id: new ObjectId(id)});
+    async delete(id: string): Promise<DeleteResult> {
+        return await postsCollection.deleteOne({_id: new ObjectId(id)});
     }
 }

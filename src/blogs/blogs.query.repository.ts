@@ -2,9 +2,11 @@ import {ObjectId, WithId} from "mongodb";
 import {BlogType, BlogViewModelType} from "./blogs.types";
 import {blogsCollection} from "../db/db";
 import {PaginationType} from "../common/types/pagination.types";
+import {ResultStatus} from "../common/result/resultCode";
+import {AppError} from "../common/types/error.types";
 
 export const blogsQueryRepository = {
-    async getBlogs(
+    async findAll(
         pageNumber: number,
         pageSize: number,
         sortBy: string,
@@ -52,15 +54,17 @@ export const blogsQueryRepository = {
             items: transformedBlogs
         }
     },
-    async getBlog(id: string): Promise<BlogViewModelType> {
+    async findById(id: string): Promise<BlogViewModelType> {
         const blog: WithId<BlogType> | null = await blogsCollection
             .findOne({_id: new ObjectId(id)});
 
         if (!blog) {
-            throw {
-                status: 404,
-                errorsMessages: [{ message: 'Blog not found' }]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Blog not found'}],
+                null
+            );
         }
 
         return {

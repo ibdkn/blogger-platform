@@ -8,12 +8,13 @@ import {resultCodeToHttpException} from "../common/result/resultCodeToHttpExcept
 import {ResultStatus} from "../common/result/resultCode";
 import {CommentViewType} from "./types/commment.type";
 import {PaginationType} from "../common/types/pagination.types";
+import {ExtensionType} from "../common/result/result.type";
 
 export const commentsController = {
     async getComment(req: Request, res: Response): Promise<void> {
         try {
             const {id} = req.params;
-            const errorsMessages: ValidationErrorType[] = validateObjectId(id);
+            const errorsMessages: ExtensionType[] = validateObjectId(id);
 
             if (errorsMessages.length > 0) {
                 res.status(resultCodeToHttpException(ResultStatus.BadRequest)).json({errorsMessages});
@@ -36,7 +37,7 @@ export const commentsController = {
     async getComments(req: Request, res: Response): Promise<void> {
         try {
             const {postId} = req.params;
-            const errorsMessages: ValidationErrorType[] = validateObjectId(postId);
+            const errorsMessages: ExtensionType[] = validateObjectId(postId);
 
             if (errorsMessages.length > 0) {
                 res.status(resultCodeToHttpException(ResultStatus.BadRequest)).json({errorsMessages});
@@ -84,7 +85,7 @@ export const commentsController = {
         try {
             const userId: string = req.user?.id as string;
             const {id, content} = req.params;
-            const errorsMessages: ValidationErrorType[] = validateObjectId(id);
+            const errorsMessages: ExtensionType[] = validateObjectId(id);
 
             if (errorsMessages.length > 0) {
                 res.status(resultCodeToHttpException(ResultStatus.BadRequest)).json({errorsMessages});
@@ -107,7 +108,7 @@ export const commentsController = {
         try {
             const userId: string = req.user?.id as string;
             const {id} = req.params;
-            const errorsMessages: ValidationErrorType[] = validateObjectId(id);
+            const errorsMessages: ExtensionType[] = validateObjectId(id);
 
             if (errorsMessages.length > 0) {
                 res.status(resultCodeToHttpException(ResultStatus.BadRequest)).json({errorsMessages});

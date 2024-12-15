@@ -1,9 +1,11 @@
 import {blogsRepository} from "./blogs.repository";
-import {BlogType, BlogViewModelType} from "./blogs.types";
-import {WithId} from "mongodb";
+import {BlogType} from "./blogs.types";
+import {DeleteResult, UpdateResult, WithId} from "mongodb";
+import {AppError} from "../common/types/error.types";
+import {ResultStatus} from "../common/result/resultCode";
 
 export const blogsService = {
-    async createBlog(body: Omit<BlogType, 'createdAt' | 'isMembership'>): Promise<BlogViewModelType> {
+    async create(body: Omit<BlogType, 'createdAt' | 'isMembership'>): Promise<string> {
         const newBlog = {
             name: body.name,
             description: body.description,
@@ -12,32 +14,18 @@ export const blogsService = {
             isMembership: false
         }
 
-        const result = await blogsRepository.createBlog(newBlog);
-
-        if (result.acknowledged) {
-            return {
-                id: result.insertedId.toString(),
-                name: newBlog.name,
-                description: newBlog.description,
-                websiteUrl: newBlog.websiteUrl,
-                createdAt: newBlog.createdAt,
-                isMembership: newBlog.isMembership
-            };
-        } else {
-            throw {
-                status: 500,
-                errorsMessages: [{ message: 'Failed to create a blog' }]
-            };
-        }
+        return await blogsRepository.create(newBlog);
     },
     async updateBlog(id: string, body: Omit<BlogType, 'createdAt' | 'isMembership'>) {
-        const blog: WithId<BlogType> | null = await blogsRepository.getBlog(id);
+        const blog: WithId<BlogType> | null = await blogsRepository.findById(id);
 
         if (!blog) {
-            throw {
-                status: 404,
-                errorsMessages: [{ message: 'Blog not found' }]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Blog not found'}],
+                null
+            );
         }
 
         const updatedFields = {
@@ -46,32 +34,38 @@ export const blogsService = {
             websiteUrl: body.websiteUrl
         }
 
-        const result = await blogsRepository.updateBlog(id, updatedFields);
+        const result: UpdateResult = await blogsRepository.update(id, updatedFields);
 
         if (result.matchedCount === 0) {
-            throw {
-                status: 500,
-                errorsMessages: [{ message: 'Failed to update the blog' }]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Failed to update the blog'}],
+                null
+            );
         }
     },
-    async deleteBlog(id: string) {
-        const blog: WithId<BlogType> | null = await blogsRepository.getBlog(id);
+    async deleteBlog(id: string): Promise<void> {
+        const blog: WithId<BlogType> | null = await blogsRepository.findById(id);
 
         if (!blog) {
-            throw {
-                status: 404,
-                errorsMessages: [{ message: 'Blog not found' }]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Blog not found'}],
+                null
+            );
         }
 
-        const result = await blogsRepository.deleteBlog(id);
+        const result: DeleteResult = await blogsRepository.delete(id);
 
         if (result.deletedCount === 0) {
-            throw {
-                status: 500,
-                errorsMessages: [{ message: 'Failed to delete the blog' }]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Blog was not deleted'}],
+                null
+            );
         }
     }
 };

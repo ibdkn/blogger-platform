@@ -7,7 +7,7 @@ export type PostType = {
     createdAt: string;
 };
 
-export type PostViewModelType = {
+export type PostViewType = {
     id: string;
 } & PostType;
 

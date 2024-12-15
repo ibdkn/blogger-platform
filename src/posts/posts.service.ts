@@ -1,22 +1,25 @@
 import {postsRepository} from "./posts.repository";
-import {PostType, PostViewModelType} from "./posts.types";
+import {PostType, PostViewType} from "./posts.types";
 import {blogsRepository} from "../blogs/blogs.repository";
 import {DeleteResult, InsertOneResult, UpdateResult, WithId} from "mongodb";
 import {BlogType} from "../blogs/blogs.types";
-import {DomainError} from "../common/types/error.types";
+import {AppError, DomainError} from "../common/types/error.types";
+import {ResultStatus} from "../common/result/resultCode";
 
 export const postsService = {
-    async createPostForSpecificBlog(
+    async createForSpecificBlog(
         blogId: string,
         body: Omit<PostType, 'blogId' | 'blogName' | 'isMembership'>
-    ): Promise<PostViewModelType> {
-        const blog: WithId<BlogType> | null = await blogsRepository.getBlog(blogId);
+    ): Promise<string> {
+        const blog: WithId<BlogType> | null = await blogsRepository.findById(blogId);
 
         if (!blog) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Blog with the given blogId does not exist'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Blog not found'}],
+                null
+            );
         }
 
         const post = {
@@ -26,32 +29,17 @@ export const postsService = {
             createdAt: new Date().toISOString(),
         };
 
-        const result: InsertOneResult = await postsRepository.createPostForSpecificBlog(post);
-
-        if (result.acknowledged) {
-            return {
-                id: result.insertedId.toString(),
-                title: post.title,
-                shortDescription: post.shortDescription,
-                content: post.content,
-                blogId: post.blogId,
-                blogName: post.blogName,
-                createdAt: post.createdAt,
-            };
-        } else {
-            throw {
-                status: 500,
-                errorsMessages: [{message: 'Failed to create the post'}]
-            };
-        }
+        return await postsRepository.createForSpecificBlog(post);
     },
-    async createPost(body: Omit<PostType, 'blogName' | 'isMembership'>): Promise<PostViewModelType> {
-        const blog: WithId<BlogType> | null = await blogsRepository.getBlog(body.blogId);
+    async create(body: Omit<PostType, 'blogName' | 'isMembership'>): Promise<string> {
+        const blog: WithId<BlogType> | null = await blogsRepository.findById(body.blogId);
 
         if (!blog) {
-            throw new DomainError(
-                404,
-                 [{message: 'Blog not found'}]
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Blog not found'}],
+                null
             );
         }
 
@@ -64,42 +52,29 @@ export const postsService = {
             createdAt: new Date().toISOString(),
         }
 
-        const result: InsertOneResult = await postsRepository.createPost(newPost);
-
-        if (result.acknowledged) {
-            return {
-                id: result.insertedId.toString(),
-                title: newPost.title,
-                shortDescription: newPost.shortDescription,
-                content: newPost.content,
-                blogId: newPost.blogId,
-                blogName: newPost.blogName,
-                createdAt: newPost.createdAt,
-            };
-        } else {
-            throw {
-                status: 500,
-                errorsMessages: [{message: 'Failed to create the post'}]
-            };
-        }
+        return await postsRepository.create(newPost);
     },
     async updatePost(id: string, body: PostType): Promise<void> {
         const post: WithId<PostType> | null = await postsRepository.getById(id);
 
         if (!post) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Post not found'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Post not found'}],
+                null
+            );
         }
 
-        const blog: WithId<BlogType> | null = await blogsRepository.getBlog(body.blogId);
+        const blog: WithId<BlogType> | null = await blogsRepository.findById(body.blogId);
 
         if (!blog) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Blog not found'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Blog not found'}],
+                null
+            );
         }
 
         const updatedFields = {
@@ -109,32 +84,38 @@ export const postsService = {
             blogId: body.blogId
         }
 
-        const result: UpdateResult = await postsRepository.updatePost(id, updatedFields);
+        const result: UpdateResult = await postsRepository.update(id, updatedFields);
 
         if (result.matchedCount === 0) {
-            throw {
-                status: 500,
-                errorsMessages: [{message: 'Failed to update the post'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Failed to update the post'}],
+                null
+            );
         }
     },
-    async deletePost(id: string): Promise<void> {
+    async delete(id: string): Promise<void> {
         const post: WithId<PostType> | null = await postsRepository.getById(id);
 
         if (!post) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Post not found'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Post not found'}],
+                null
+            );
         }
 
-        const result: DeleteResult = await postsRepository.deletePost(id);
+        const result: DeleteResult = await postsRepository.delete(id);
 
         if (result.deletedCount === 0) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Post was not deleted'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Post was not deleted'}],
+                null
+            );
         }
     }
 }

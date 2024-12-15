@@ -1,8 +1,10 @@
 import {ObjectId, WithId} from "mongodb";
 import {blogsCollection, postsCollection} from "../db/db";
 import {PaginationType} from "../common/types/pagination.types";
-import {PostType, PostViewModelType} from "./posts.types";
+import {PostType, PostViewType} from "./posts.types";
 import {BlogType} from "../blogs/blogs.types";
+import {AppError} from "../common/types/error.types";
+import {ResultStatus} from "../common/result/resultCode";
 
 export const postsQueryRepository = {
     async getPosts(
@@ -10,7 +12,7 @@ export const postsQueryRepository = {
         pageSize: number,
         sortBy: string,
         sortDirection: 'asc' | 'desc'
-    ): Promise<PaginationType<PostViewModelType>> {
+    ): Promise<PaginationType<PostViewType>> {
         const posts: WithId<PostType>[] = await postsCollection
             .find({})
             .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
@@ -29,7 +31,7 @@ export const postsQueryRepository = {
         }
 
         const postsCount: number = await postsCollection.countDocuments({});
-        const transformedPosts: PostViewModelType[] = posts.map(post => ({
+        const transformedPosts: PostViewType[] = posts.map(post => ({
             id: post._id.toString(),
             title: post.title,
             shortDescription: post.shortDescription,
@@ -47,15 +49,16 @@ export const postsQueryRepository = {
             items: transformedPosts
         }
     },
-    async getPost(id: string): Promise<PostViewModelType> {
-        const post: WithId<PostType> | null = await postsCollection
-            .findOne({_id: new ObjectId(id)});
+    async findById(id: string): Promise<PostViewType> {
+        const post: WithId<PostType> | null = await postsCollection.findOne({_id: new ObjectId(id)});
 
         if (!post) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Post not found'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Post not found'}],
+                null
+            );
         }
 
         return {
@@ -68,21 +71,22 @@ export const postsQueryRepository = {
             createdAt: post.createdAt,
         };
     },
-    async getPostsByBlogId(
+    async findAllByBlogId(
         blogId: string,
         pageNumber: number,
         pageSize: number,
         sortBy: string,
         sortDirection: 'asc' | 'desc'
-    ): Promise<PaginationType<PostViewModelType>> {
-        const blog: WithId<BlogType> | null = await blogsCollection
-            .findOne({_id: new ObjectId(blogId)});
+    ): Promise<PaginationType<PostViewType>> {
+        const blog: WithId<BlogType> | null = await blogsCollection.findOne({_id: new ObjectId(blogId)});
 
         if (!blog) {
-            throw {
-                status: 404,
-                errorsMessages: [{message: 'Blog with the given blogId does not exist'}]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'Not found',
+                [{message: 'Blog not found'}],
+                null
+            );
         }
 
         const posts: WithId<PostType>[] = await postsCollection
@@ -104,7 +108,7 @@ export const postsQueryRepository = {
 
         const postsCount: number = await postsCollection.countDocuments({blogId});
 
-        const transformedPosts: PostViewModelType[] = posts.map(post => ({
+        const transformedPosts: PostViewType[] = posts.map(post => ({
             id: post._id.toString(),
             title: post.title,
             shortDescription: post.shortDescription,
