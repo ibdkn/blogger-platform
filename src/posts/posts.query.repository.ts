@@ -1,6 +1,6 @@
 import {ObjectId, WithId} from "mongodb";
 import {blogsCollection, postsCollection} from "../db/db";
-import {PaginatedResult} from "../common/types/pagination.types";
+import {PaginationType} from "../common/types/pagination.types";
 import {PostType, PostViewModelType} from "./posts.types";
 import {BlogType} from "../blogs/blogs.types";
 
@@ -10,7 +10,7 @@ export const postsQueryRepository = {
         pageSize: number,
         sortBy: string,
         sortDirection: 'asc' | 'desc'
-    ): Promise<PaginatedResult<PostViewModelType>> {
+    ): Promise<PaginationType<PostViewModelType>> {
         const posts: WithId<PostType>[] = await postsCollection
             .find({})
             .sort({[sortBy]: sortDirection === 'asc' ? 1 : -1} as any)
@@ -74,7 +74,7 @@ export const postsQueryRepository = {
         pageSize: number,
         sortBy: string,
         sortDirection: 'asc' | 'desc'
-    ): Promise<PaginatedResult<PostViewModelType>> {
+    ): Promise<PaginationType<PostViewModelType>> {
         const blog: WithId<BlogType> | null = await blogsCollection
             .findOne({_id: new ObjectId(blogId)});
 

@@ -4,10 +4,11 @@ import {PostType} from "../posts/posts.types";
 import {SETTINGS} from "../settings";
 import {UserType} from "../users/users.type";
 import {CommentType} from "../comments/comments.type";
+import {UserDBType} from "../users/types/user.db.type";
 
 export let blogsCollection: Collection<BlogType>;
 export let postsCollection: Collection<PostType>;
-export let usersCollection: Collection<UserType>;
+export let usersCollection: Collection<UserDBType>;
 export let commentsCollection: Collection<CommentType>;
 
 export const runDb = async (url: string): Promise<boolean> => {
@@ -16,7 +17,7 @@ export const runDb = async (url: string): Promise<boolean> => {
 
     blogsCollection = db.collection<BlogType>(SETTINGS.PATH.BLOGS);
     postsCollection = db.collection<PostType>(SETTINGS.PATH.POSTS);
-    usersCollection = db.collection<UserType>(SETTINGS.PATH.USERS);
+    usersCollection = db.collection<UserDBType>(SETTINGS.PATH.USERS);
     commentsCollection = db.collection<CommentType>(SETTINGS.PATH.COMMENTS);
 
     try {

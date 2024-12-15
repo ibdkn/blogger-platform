@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
 import {blogsService} from "./blogs.service";
 import {paginationQueries} from "../helpers/pagination.helper";
-import {PaginatedResult} from "../common/types/pagination.types";
+import {PaginationType} from "../common/types/pagination.types";
 import {BlogType, BlogViewModelType} from "./blogs.types";
 import {blogsQueryRepository} from "./blogs.query.repository";
 import {validateObjectId} from "../helpers/validation.helper";
@@ -18,7 +18,7 @@ export const blogsController = {
                 searchNameTerm,
             } = paginationQueries(req);
 
-            const blogs: PaginatedResult<BlogViewModelType> = await blogsQueryRepository.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm)
+            const blogs: PaginationType<BlogViewModelType> = await blogsQueryRepository.getBlogs(pageNumber, pageSize, sortBy, sortDirection, searchNameTerm)
 
             res.status(200).json(blogs);
         } catch (e: any) {

@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
 import {postsService} from "./posts.service";
 import {paginationQueries} from "../helpers/pagination.helper";
-import {PaginatedResult} from "../common/types/pagination.types";
+import {PaginationType} from "../common/types/pagination.types";
 import {PostViewModelType} from "./posts.types";
 import {postsQueryRepository} from "./posts.query.repository";
 import {DomainError, ValidationErrorType} from "../common/types/error.types";
@@ -17,7 +17,7 @@ export const postsController = {
                 sortDirection,
             } = paginationQueries(req);
 
-            const posts: PaginatedResult<PostViewModelType> = await postsQueryRepository.getPosts(pageNumber, pageSize,
+            const posts: PaginationType<PostViewModelType> = await postsQueryRepository.getPosts(pageNumber, pageSize,
                 sortBy, sortDirection);
 
             res.status(200).json(posts);
@@ -69,7 +69,7 @@ export const postsController = {
                 sortDirection,
             } = paginationQueries(req);
 
-            const posts: PaginatedResult<PostViewModelType> = await postsQueryRepository.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
+            const posts: PaginationType<PostViewModelType> = await postsQueryRepository.getPostsByBlogId(blogId, pageNumber, pageSize, sortBy, sortDirection);
 
             res.status(200).json(posts);
         } catch (e: any) {

@@ -1,6 +1,6 @@
-export interface IUserDB {
+export type UserDBType = {
     login: string,
     email: string,
     passwordHash: string,
-    createdAt: Date,
+    createdAt: string,
 }

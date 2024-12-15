@@ -1,6 +1,6 @@
-import {ResultStatus} from "../result/resultCode";
 import {ExtensionType} from "../result/result.type";
 import {HttpStatuses} from "./httpStatuses";
+import {ResultStatus} from "../result/resultCode";
 
 export type ValidationErrorType = {
     field?: string;
@@ -20,12 +20,12 @@ export class DomainError extends Error {
 }
 
 export class AppError extends Error {
-    status: HttpStatuses;
+    status: ResultStatus;
     message: string;
     extensions: ExtensionType[];
     data: any
 
-    constructor(status: HttpStatuses, message: string, extensions: ExtensionType[], data: any = null) {
+    constructor(status: ResultStatus, message: string, extensions: ExtensionType[], data: any = null) {
         super();
         this.status = status;
         this.message = message;

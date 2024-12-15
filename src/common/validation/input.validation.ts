@@ -1,8 +1,8 @@
-import {validationResult} from "express-validator";
+import {Result, validationResult} from "express-validator";
 import { Request, Response, NextFunction } from 'express';
 
 export const inputValidation = (req: Request, res: Response, next: NextFunction) => {
-    const errors = validationResult(req);
+    const errors: Result = validationResult(req);
 
     if (!errors.isEmpty()) {
         const formattedErrors = errors

@@ -13,7 +13,9 @@ export const resultCodeToHttpException = (resultCode: ResultStatus): number => {
             return HttpStatuses.Unauthorized;
         case ResultStatus.BadRequest:
             return HttpStatuses.BadRequest;
+        case ResultStatus.InternalServerError:
+            return HttpStatuses.InternalServerError;
         default:
-            return HttpStatuses.ServerError;
+            return HttpStatuses.InternalServerError;
     }
 };

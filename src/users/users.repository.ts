@@ -1,30 +1,24 @@
 import {usersCollection} from "../db/db";
-import {UserType} from "./users.type";
-import {ObjectId, WithId} from "mongodb";
+import {DeleteResult, InsertOneResult, ObjectId, WithId} from "mongodb";
+import {UserDBType} from "./types/user.db.type";
 
 export const usersRepository = {
-    async doesExistById(id: string): Promise<WithId<UserType> | null> {
-        return await usersCollection
-            .findOne({_id: new ObjectId(id)});
+    async doesExistById(id: string): Promise<WithId<UserDBType> | null> {
+        return await usersCollection.findOne({_id: new ObjectId(id)});
+    },
+    async create(user: UserDBType): Promise<string> {
+        const newUser: InsertOneResult<UserDBType> = await usersCollection.insertOne(user);
+        return newUser.insertedId.toString();
+    },
+    async findByLoginOrEmail(loginOrEmail: string): Promise<WithId<UserDBType> | null> {
+        return await usersCollection.findOne({$or: [{login: loginOrEmail}, {email: loginOrEmail}]});
+    },
+    async delete(id: string): Promise<DeleteResult> {
+        return await usersCollection.deleteOne({_id: new ObjectId(id)});
     },
 
-
-
-
-    async getUser(id: string): Promise<WithId<UserType> | null> {
-        return await usersCollection
-            .findOne({_id: new ObjectId(id)});
+    // todo выпилить после рефакторинга comments
+    async getUser(id: string): Promise<WithId<UserDBType> | null> {
+        return await usersCollection.findOne({_id: new ObjectId(id)});
     },
-    async findByLoginOrEmail(loginOrEmail: string): Promise<WithId<UserType> | null> {
-        return await usersCollection
-            .findOne({$or: [{login: loginOrEmail}, {email: loginOrEmail}]});
-    },
-    async createUser(user: UserType) {
-        return await usersCollection
-            .insertOne(user);
-    },
-    async deleteUser(id: string) {
-        return await usersCollection
-            .deleteOne({_id: new ObjectId(id)});
-    }
 }

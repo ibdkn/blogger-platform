@@ -1,4 +1,4 @@
-export interface IUserView {
+export type UserViewType = {
     id: string;
     login: string;
     email: string;

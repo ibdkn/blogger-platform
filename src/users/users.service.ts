@@ -1,19 +1,22 @@
 import {usersRepository} from "./users.repository";
-import {UserType} from "./users.type";
-import bcrypt from 'bcrypt';
-import {DeleteResult, InsertOneResult, WithId} from "mongodb";
-import {ValidationErrorType} from "../common/types/error.types";
+import {DeleteResult, WithId} from "mongodb";
+import {AppError} from "../common/types/error.types";
+import {CreateUserInputDto} from "./types/create.user.input.dto";
+import {HttpStatuses} from "../common/types/httpStatuses";
+import {ExtensionType} from "../common/result/result.type";
+import {bcryptService} from "../common/adapters/bcrypt.service";
+import {UserDBType} from "./types/user.db.type";
+import {ResultStatus} from "../common/result/resultCode";
 
 export const usersService = {
-    async createUser(dto: Omit<UserType, 'createdAt'>): Promise<string> {
+    async createUser(dto: CreateUserInputDto): Promise<string> {
         const {login, password, email} = dto;
-
         const loginOrEmail: string = login || email
-
-        const existingUser: WithId<UserType> | null = await usersRepository.findByLoginOrEmail(loginOrEmail);
+        const existingUser: WithId<UserDBType> | null = await usersRepository.findByLoginOrEmail(loginOrEmail);
 
         if (existingUser) {
-            const errorsMessages: ValidationErrorType[] = [];
+            const errorsMessages: ExtensionType[] = [];
+
             if (existingUser.login === login) {
                 errorsMessages.push({ field: 'login', message: 'Login already exists' });
             }
@@ -21,33 +24,37 @@ export const usersService = {
                 errorsMessages.push({ field: 'email', message: 'Email already exists' });
             }
 
-            throw {status: 400, errorsMessages};
+            throw new AppError(
+                ResultStatus.BadRequest,
+                'Bad Request',
+                errorsMessages,
+                null
+            );
         }
 
-        const salt: string = await bcrypt.genSalt(10);
-        const hashedPassword: string = await bcrypt.hash(password, salt);
+        const passwordHash: string = await bcryptService.generateHash(password);
 
-        const newUser = {
+        const newUser: UserDBType = {
             login,
-            passwordHash: hashedPassword,
+            passwordHash,
             email,
             createdAt: new Date().toISOString()
         }
 
-        const result = await usersRepository.createUser(newUser);
-
-        return result.insertedId.toString();
+        return await usersRepository.create(newUser);
     },
     async deleteUser(id: string): Promise<DeleteResult> {
-        const user: WithId<UserType> | null = await usersRepository.getUser(id);
+        const user: WithId<UserDBType> | null = await usersRepository.doesExistById(id);
 
         if (!user) {
-            throw {
-                status: 404,
-                errorsMessages: [{ message: 'User not found' }]
-            };
+            throw new AppError(
+                ResultStatus.NotFound,
+                'User not found',
+                [{ message: 'User not found' }],
+                null
+            );
         }
 
-        return await usersRepository.deleteUser(id);
+        return await usersRepository.delete(id);
     }
 }

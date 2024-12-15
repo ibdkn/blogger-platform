@@ -12,5 +12,13 @@ export const paginationQueries = (req: Request) => {
     const searchLoginTerm: string | null = req.query.searchLoginTerm ? String(req.query.searchLoginTerm) : null;
     const searchEmailTerm: string | null = req.query.searchEmailTerm ? String(req.query.searchEmailTerm) : null;
 
-    return {pageNumber, pageSize, sortBy, sortDirection, searchNameTerm, searchLoginTerm, searchEmailTerm};
+    return {
+        pageNumber,
+        pageSize,
+        sortBy,
+        sortDirection,
+        searchNameTerm,
+        searchLoginTerm,
+        searchEmailTerm
+    };
 }

@@ -1,7 +1,7 @@
 import {ObjectId, WithId} from "mongodb";
 import {BlogType, BlogViewModelType} from "./blogs.types";
 import {blogsCollection} from "../db/db";
-import {PaginatedResult} from "../common/types/pagination.types";
+import {PaginationType} from "../common/types/pagination.types";
 
 export const blogsQueryRepository = {
     async getBlogs(
@@ -10,7 +10,7 @@ export const blogsQueryRepository = {
         sortBy: string,
         sortDirection: 'asc' | 'desc',
         searchNameTerm: string | null
-    ): Promise<PaginatedResult<BlogViewModelType>> {
+    ): Promise<PaginationType<BlogViewModelType>> {
         const filter: any = {};
 
         if (searchNameTerm) {

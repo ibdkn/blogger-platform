@@ -3,9 +3,13 @@ import {usersService} from "./users.service";
 import {usersQueryRepository} from "./users.query.repository";
 import {paginationQueries} from "../helpers/pagination.helper";
 import {UserViewModelType} from "./users.type";
-import {ValidationErrorType} from "../common/types/error.types";
+import {AppError} from "../common/types/error.types";
 import {validateObjectId} from "../helpers/validation.helper";
-import {PaginatedResult} from "../common/types/pagination.types";
+import {PaginationType} from "../common/types/pagination.types";
+import {ResultStatus} from "../common/result/resultCode";
+import {UserViewType} from "./types/user.view.type";
+import {ExtensionType} from "../common/result/result.type";
+import {resultCodeToHttpException} from "../common/result/resultCodeToHttpException";
 
 export const usersController = {
     async getUsers(req: Request, res: Response): Promise<void> {
@@ -19,16 +23,24 @@ export const usersController = {
                 searchEmailTerm,
             } = paginationQueries(req);
 
-            const users: PaginatedResult<UserViewModelType> = await usersQueryRepository.getUsers(pageNumber, pageSize,
-                sortBy, sortDirection, searchLoginTerm, searchEmailTerm);
+            const users: PaginationType<UserViewType> = await usersQueryRepository
+                .findAllUsers(
+                    pageNumber,
+                    pageSize,
+                    sortBy,
+                    sortDirection,
+                    searchLoginTerm,
+                    searchEmailTerm
+                );
 
-            res.status(200).send(users);
+            res.status(resultCodeToHttpException(ResultStatus.Success)).send(users);
         } catch (e: any) {
-            if (e.status) {
-                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+            if (e instanceof AppError) {
+                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({ message: 'Internal server error' });
+                res.status(resultCodeToHttpException(ResultStatus.InternalServerError))
+                    .send({message: 'Internal Server Error'});
             }
         }
     },
@@ -38,37 +50,39 @@ export const usersController = {
 
             const userId: string = await usersService.createUser({login, password: password, email});
 
-            const newUser: UserViewModelType | null = await usersQueryRepository.findUser(userId);
+            const newUser: UserViewModelType | null = await usersQueryRepository.findById(userId);
 
-            res.status(201).send(newUser);
+            res.status(resultCodeToHttpException(ResultStatus.Created)).send(newUser);
         } catch (e: any) {
-            if (e.status) {
-                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+            if (e instanceof AppError) {
+                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({ message: 'Internal server error' });
+                res.status(resultCodeToHttpException(ResultStatus.InternalServerError))
+                    .send({message: 'Internal Server Error'});
             }
         }
     },
     async deleteUser(req: Request, res: Response): Promise<void> {
         try {
             const {id} = req.params;
-            const errorsMessages: ValidationErrorType[] = validateObjectId(id);
+            const errorsMessages: ExtensionType[] = validateObjectId(id);
 
             if (errorsMessages.length > 0) {
-                res.status(400).json({ errorsMessages });
+                res.status(resultCodeToHttpException(ResultStatus.BadRequest)).json({errorsMessages});
                 return;
             }
 
             await usersService.deleteUser(id);
 
-            res.status(204).send();
+            res.status(resultCodeToHttpException(ResultStatus.NoContent)).send();
         } catch (e: any) {
-            if (e.status) {
-                res.status(e.status).json({ errorsMessages: e.errorsMessages });
+            if (e instanceof AppError) {
+                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
             } else {
                 console.error('Error occurred while fetching posts:', e);
-                res.status(500).json({ message: 'Internal server error' });
+                res.status(resultCodeToHttpException(ResultStatus.InternalServerError))
+                    .send({message: 'Internal Server Error'});
             }
         }
     }

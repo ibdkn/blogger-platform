@@ -1,3 +1,4 @@
+// todo выпилить
 export type UserType = {
     login: string,
     password: string,

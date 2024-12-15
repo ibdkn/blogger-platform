@@ -8,14 +8,5 @@ import {accessTokenGuard} from "./guards/access.token.guard";
 
 export const authRouter: Router = Router();
 
-authRouter.post(
-    routersPaths.auth.login,
-    passwordValidation,
-    loginOrEmailValidation,
-    inputValidation,
-    authController.login);
-authRouter.get(
-    routersPaths.auth.me,
-    accessTokenGuard,
-    authController.me
-);
+authRouter.post(routersPaths.auth.login, passwordValidation, loginOrEmailValidation, inputValidation, authController.login);
+authRouter.get(routersPaths.auth.me, accessTokenGuard, authController.me);

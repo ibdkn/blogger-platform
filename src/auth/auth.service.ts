@@ -7,18 +7,17 @@ import {AppError, DomainError} from "../common/types/error.types";
 import {ResultStatus} from "../common/result/resultCode";
 import {bcryptService} from "../common/adapters/bcrypt.service";
 import {jwtService} from "../common/adapters/jwt.service";
-import {HttpStatuses} from "../common/types/httpStatuses";
 import {Result} from "../common/result/result.type";
 import {AccessTokenType} from "./types/auth.token.type";
-import {UserType} from "../users/users.type";
+import {UserDBType} from "../users/types/user.db.type";
 
 export const authService = {
     async loginUser(loginOrEmail: string, password: string): Promise<Result<AccessTokenType | null>> {
-        const result: Result<WithId<UserType> | null> = await this.checkUserCredentials(loginOrEmail, password);
+        const result: Result<WithId<UserDBType> | null> = await this.checkUserCredentials(loginOrEmail, password);
 
         if (result.status !== ResultStatus.Success) {
             throw new AppError(
-                HttpStatuses.Unauthorized,
+                ResultStatus.Unauthorized,
                 'Unauthorized',
                 [{ field: 'password', message: 'Wrong password' }],
                 null
@@ -33,12 +32,12 @@ export const authService = {
             data: {accessToken},
         }
     },
-    async checkUserCredentials(loginOrEmail: string, password: string): Promise<Result<WithId<UserType> | null>> {
-        const user: WithId<UserType> | null = await usersRepository.findByLoginOrEmail(loginOrEmail);
+    async checkUserCredentials(loginOrEmail: string, password: string): Promise<Result<WithId<UserDBType> | null>> {
+        const user: WithId<UserDBType> | null = await usersRepository.findByLoginOrEmail(loginOrEmail);
 
         if (!user) {
             throw new AppError(
-                HttpStatuses.NotFound,
+                ResultStatus.NotFound,
                 'Not Found',
                 [{field: 'loginOrEmail', message: 'Not Found'}],
                 null
@@ -46,11 +45,11 @@ export const authService = {
         }
 
         // todo изменить тип на hashPassword
-        let isPasswordCorrect: boolean = await bcryptService.checkPassword(password, user.password);
+        let isPasswordCorrect: boolean = await bcryptService.checkPassword(password, user.passwordHash);
 
         if (!isPasswordCorrect) {
             throw new AppError(
-                HttpStatuses.BadRequest,
+                ResultStatus.BadRequest,
                 'Bad Request',
                 [{field: 'password', message: 'Wrong password'}],
                 null

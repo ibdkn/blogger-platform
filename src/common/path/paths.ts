@@ -6,5 +6,6 @@ export const routersPaths = {
     auth: {
         login: '/login',
         me: '/me'
-    }
+    },
+    id: '/:id'
 }
