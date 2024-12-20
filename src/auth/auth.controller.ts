@@ -17,6 +17,7 @@ export const authController = {
     async login(req: RequestWithBody<LoginInputDto>, res: Response): Promise<void> {
         try {
             const {loginOrEmail, password} = req.body;
+
             const result: Result<AccessTokenType | null> = await authService.loginUser(loginOrEmail, password);
 
             res.status(resultCodeToHttpException(ResultStatus.Success))
@@ -54,7 +55,7 @@ export const authController = {
 
             const result = await authService.registerUser(login, password, email);
             if (result.status === ResultStatus.Success)
-                res.status(HttpStatuses.Created).send();
+                res.status(HttpStatuses.NoContent).send();
         } catch (e) {
             if (e instanceof AppError) {
                 res.status(resultCodeToHttpException(e.status)).send(e.extensions);

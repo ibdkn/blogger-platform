@@ -9,7 +9,6 @@ import {AccessTokenType} from "./types/auth.token.type";
 import {UserDBType, UserDBTypeWithConfirm} from "../users/types/user.db.type";
 import {nodemailerService} from "../common/adapters/nodemailer.service";
 import {emailExamples} from "../common/adapters/emailExpamples";
-import {User} from "../users/domain/user.entity";
 import {randomUUID} from "node:crypto";
 import {isExpirationDatePassed} from "../helpers/date.helper";
 
@@ -69,13 +68,15 @@ export const authService = {
         email: string
     ): Promise<Result<UserDBType | null>> {
         const user = await usersRepository.doesExistByLoginOrEmail(login, email);
-        if (user)
-            return {
-                status: ResultStatus.BadRequest,
-                errorMessage: 'Bad Request',
-                data: null,
-                extensions: [{ field: 'loginOrEmail', message: 'Already Registered' }],
-            };
+
+        if (user) {
+            throw new AppError(
+                ResultStatus.BadRequest,
+                'Bad Request',
+                [{ field: 'loginOrEmail', message: 'Already Registered' }],
+                null
+            );
+        }
 
         const passwordHash = await bcryptService.generateHash(pass);
         const confirmationCode = randomUUID();

@@ -13,7 +13,7 @@ export const SETTINGS = {
     },
     MONGO_URL: process.env.MONGO_URL || 'mongodb://localhost:27017',
     DB_NAME: process.env.DB_NAME || 'blogger-platform',
-    JWT_SECRET: process.env.JWT_SECRET || 'secret_key',
+    JWT_SECRET: process.env.JWT_SECRET || 'your_secret_key',
     JWT_TIME: process.env.JWT_TIME || '1h',
     EMAIL: process.env.EMAIL as string,
     EMAIL_PASS: process.env.EMAIL_PASS as string,
