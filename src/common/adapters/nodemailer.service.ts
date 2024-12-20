@@ -6,7 +6,9 @@ export const nodemailerService = {
 
     async sendEmail(email: string, code: string, template: (code: string) => string): Promise<boolean> {
         let transporter = nodemailer.createTransport({
-            service: "gmail",
+            host: "smtp.mail.ru",
+            port: 465,
+            secure: true,
             auth: {
                 user: SETTINGS.EMAIL,
                 pass: SETTINGS.EMAIL_PASS,
@@ -15,7 +17,7 @@ export const nodemailerService = {
 
         try {
             let info = await transporter.sendMail({
-                from: '"Hello there 🖖" <codeSender>',
+                from: process.env.EMAIL,
                 to: 'bellagothica28@gmail.com',
                 subject: "Your code is here",
                 html: template(code), // html body
