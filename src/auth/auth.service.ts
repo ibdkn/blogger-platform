@@ -104,7 +104,7 @@ export const authService = {
             )
             .catch(er => console.error('error in send email:', er));
         return {
-            status: ResultStatus.Success,
+            status: ResultStatus.Created,
             data: newUser,
             extensions: [],
         };

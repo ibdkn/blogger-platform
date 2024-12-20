@@ -54,8 +54,11 @@ export const authController = {
             const { login, email, password } = req.body;
 
             const result = await authService.registerUser(login, password, email);
-            if (result.status === ResultStatus.Success)
-                res.status(HttpStatuses.NoContent).send();
+            if (result.status === ResultStatus.Created) {
+                res.status(resultCodeToHttpException(ResultStatus.NoContent)).send();
+            } else {
+                res.status(resultCodeToHttpException(ResultStatus.InternalServerError)).send();
+            }
         } catch (e) {
             if (e instanceof AppError) {
                 res.status(resultCodeToHttpException(e.status)).send(e.extensions);
@@ -75,7 +78,8 @@ export const authController = {
             ).test(code);
 
             if (!code || typeof code !== 'string' || !isUuid) {
-                res.status(resultCodeToHttpException(ResultStatus.BadRequest)).send('Invalid confirmation code')
+                res.status(resultCodeToHttpException(ResultStatus.BadRequest)).send('Invalid confirmation code');
+                return;
             }
 
             await authService.registrationConfirmation(code);
