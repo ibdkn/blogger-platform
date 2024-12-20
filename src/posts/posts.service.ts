@@ -1,9 +1,9 @@
 import {postsRepository} from "./posts.repository";
-import {PostType, PostViewType} from "./posts.types";
+import {PostType} from "./posts.types";
 import {blogsRepository} from "../blogs/blogs.repository";
-import {DeleteResult, InsertOneResult, UpdateResult, WithId} from "mongodb";
+import {DeleteResult, UpdateResult, WithId} from "mongodb";
 import {BlogType} from "../blogs/blogs.types";
-import {AppError, DomainError} from "../common/types/error.types";
+import {AppError} from "../common/types/error.types";
 import {ResultStatus} from "../common/result/resultCode";
 
 export const postsService = {

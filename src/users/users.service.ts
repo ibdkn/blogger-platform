@@ -5,7 +5,7 @@ import {CreateUserInputDto} from "./types/create.user.input.dto";
 import {HttpStatuses} from "../common/types/httpStatuses";
 import {ExtensionType} from "../common/result/result.type";
 import {bcryptService} from "../common/adapters/bcrypt.service";
-import {UserDBType} from "./types/user.db.type";
+import {UserDBType, UserDBTypeWithConfirm} from "./types/user.db.type";
 import {ResultStatus} from "../common/result/resultCode";
 
 export const usersService = {
@@ -34,11 +34,16 @@ export const usersService = {
 
         const passwordHash: string = await bcryptService.generateHash(password);
 
-        const newUser: UserDBType = {
+        const newUser: UserDBTypeWithConfirm = {
             login,
             passwordHash,
             email,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            emailConfirmation: {
+                confirmationCode: '',
+                expirationDate: '',
+                isConfirmed: true,
+            }
         }
 
         return await usersRepository.create(newUser);

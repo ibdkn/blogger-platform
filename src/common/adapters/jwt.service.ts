@@ -4,7 +4,7 @@ import {TokenPayload} from "../../auth/types/token.payload.type";
 
 export const jwtService = {
     async createToken(userId: string): Promise<string> {
-        return jwt.sign({userId}, SETTINGS.JWT_SECRET, {expiresIn: SETTINGS.AC_TIME});
+        return jwt.sign({userId}, SETTINGS.JWT_SECRET, {expiresIn: SETTINGS.JWT_TIME});
     },
     async verifyToken(token: string): Promise<TokenPayload | null> {
         try {
