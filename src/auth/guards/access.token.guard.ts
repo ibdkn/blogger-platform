@@ -3,7 +3,6 @@ import {usersRepository} from "../../users/users.repository";
 import {jwtService} from "../../common/adapters/jwt.service";
 import {HttpStatuses} from "../../common/types/httpStatuses";
 import {TokenPayload} from "../types/token.payload.type";
-import {UserType} from "../../users/users.type";
 import {UserDBType} from "../../users/types/user.db.type";
 
 export const accessTokenGuard = async (req: any, res: Response, next: NextFunction) => {

@@ -2,7 +2,6 @@ import {Request, Response} from "express";
 import {usersService} from "./users.service";
 import {usersQueryRepository} from "./users.query.repository";
 import {paginationQueries} from "../helpers/pagination.helper";
-import {UserViewModelType} from "./users.type";
 import {AppError} from "../common/types/error.types";
 import {validateObjectId} from "../helpers/validation.helper";
 import {PaginationType} from "../common/types/pagination.types";
@@ -50,7 +49,7 @@ export const usersController = {
 
             const userId: string = await usersService.createUser({login, password: password, email});
 
-            const newUser: UserViewModelType | null = await usersQueryRepository.findById(userId);
+            const newUser: UserViewType | null = await usersQueryRepository.findById(userId);
 
             res.status(resultCodeToHttpException(ResultStatus.Created)).send(newUser);
         } catch (e: any) {

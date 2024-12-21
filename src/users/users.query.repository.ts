@@ -1,6 +1,5 @@
 import {ObjectId, WithId} from "mongodb";
 import {usersCollection} from "../db/db";
-import {UserViewModelType} from "./users.type";
 import {PaginationType} from "../common/types/pagination.types";
 import {AppError} from "../common/types/error.types";
 import {UserViewType} from "./types/user.view.type";
@@ -8,7 +7,7 @@ import {UserDBType} from "./types/user.db.type";
 import {ResultStatus} from "../common/result/resultCode";
 
 export const usersQueryRepository = {
-    async findById(id: string): Promise<UserViewModelType | null> {
+    async findById(id: string): Promise<UserViewType | null> {
         const user: WithId<UserDBType> | null = await usersCollection.findOne({ _id: new ObjectId(id) });
 
         if (!user) {

@@ -3,16 +3,11 @@ export type UserDBType = {
     email: string,
     passwordHash: string,
     createdAt: string,
+    emailConfirmation: EmailConfirmationType
 }
 
-export type UserDBTypeWithConfirm = {
-    login: string,
-    email: string,
-    passwordHash: string,
-    createdAt: string,
-    emailConfirmation: {
-        confirmationCode: string;
-        expirationDate: string;
-        isConfirmed: boolean;
-    }
+type EmailConfirmationType = {
+    confirmationCode: string;
+    expirationDate: string;
+    isConfirmed: boolean;
 }

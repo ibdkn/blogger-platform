@@ -1,16 +1,17 @@
 import {usersRepository} from "../users/users.repository";
-import {WithId} from "mongodb";
+import {UpdateResult, WithId} from "mongodb";
 import {AppError} from "../common/types/error.types";
 import {ResultStatus} from "../common/result/resultCode";
 import {bcryptService} from "../common/adapters/bcrypt.service";
 import {jwtService} from "../common/adapters/jwt.service";
 import {ExtensionType, Result} from "../common/result/result.type";
 import {AccessTokenType} from "./types/auth.token.type";
-import {UserDBType, UserDBTypeWithConfirm} from "../users/types/user.db.type";
+import {UserDBType} from "../users/types/user.db.type";
 import {nodemailerService} from "../common/adapters/nodemailer.service";
 import {emailExamples} from "../common/adapters/emailExpamples";
 import {randomUUID} from "node:crypto";
 import {isExpirationDatePassed} from "../helpers/date.helper";
+import {confirmationService} from "../common/adapters/confirmation.service";
 
 export const authService = {
     async loginUser(loginOrEmail: string, password: string): Promise<Result<AccessTokenType | null>> {
@@ -62,13 +63,10 @@ export const authService = {
             data: user
         };
     },
-    async registerUser(
-        login: string,
-        pass: string,
-        email: string
-    ): Promise<Result<UserDBType | null>> {
-        const existingUser = await usersRepository.doesExistByLoginOrEmail(login, email);
+    async register(login: string, password: string, email: string): Promise<Result<UserDBType>> {
+        const existingUser: WithId<UserDBType> | null = await usersRepository.doesExistByLoginOrEmail(login, email);
 
+        // todo устранить дублирование
         if (existingUser) {
             const errorsMessages: ExtensionType[] = [];
 
@@ -87,11 +85,11 @@ export const authService = {
             );
         }
 
-        const passwordHash = await bcryptService.generateHash(pass);
-        const confirmationCode = randomUUID();
-        const expirationDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours expiration
+        const passwordHash: string = await bcryptService.generateHash(password);
+        const confirmationCode: string = randomUUID();
+        const expirationDate: string = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-        const newUser: UserDBTypeWithConfirm = {
+        const newUser: UserDBType = {
             login,
             email,
             passwordHash,
@@ -103,7 +101,16 @@ export const authService = {
             }
         };
 
-        await usersRepository.create(newUser);
+        const result: string = await usersRepository.create(newUser);
+
+        if (!result) {
+            throw new AppError(
+                ResultStatus.BadRequest,
+                'Bad Request',
+                [{field: 'password', message: 'Failed creating new user'}],
+                null
+            );
+        }
 
         nodemailerService
             .sendEmail(
@@ -112,14 +119,16 @@ export const authService = {
                 emailExamples.registrationEmail
             )
             .catch(er => console.error('error in send email:', er));
+
         return {
-            status: ResultStatus.Created,
+            status: ResultStatus.Success,
             data: newUser,
             extensions: [],
         };
     },
-    async registrationConfirmation(code: string) {
-        const user = await usersRepository.findByConfirmationCode(code);
+    async confirm(code: string):Promise<UpdateResult<UserDBType>> {
+        const user: WithId<UserDBType> | null = await usersRepository.findByConfirmationCode(code);
+
         if (!user) {
             throw new AppError(
                 ResultStatus.NotFound,
@@ -133,7 +142,7 @@ export const authService = {
             throw new AppError(
                 ResultStatus.BadRequest,
                 'Bad Request',
-                [{ message: 'Email already confirmed', field: 'code'}],
+                [{ message: 'Email is already confirmed', field: 'code'}],
                 null
             );
         }
@@ -150,14 +159,14 @@ export const authService = {
         user.emailConfirmation.isConfirmed = true;
         return await usersRepository.update(user);
     },
-    async registrationEmailResending(email: string) {
-        const user = await usersRepository.findByLoginOrEmail(email);
+    async resendCode(email: string): Promise<Result<WithId<UserDBType>>> {
+        const user: WithId<UserDBType> | null = await usersRepository.findByLoginOrEmail(email);
 
         if (!user) {
             throw new AppError(
                 ResultStatus.BadRequest,
                 'Bad Request',
-                [{ message: 'User not found', field: 'email'}],
+                [{ message: 'User with this email not found', field: 'email'}],
                 null
             );
         }
@@ -166,13 +175,13 @@ export const authService = {
             throw new AppError(
                 ResultStatus.BadRequest,
                 'Bad Request',
-                [{ message: 'Email is already confirmed', field: "email"}],
+                [{ message: 'Email is already confirmed', field: 'email'}],
                 null
             );
         }
 
-        const confirmationCode = randomUUID();
-        const expirationDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours expiration
+        // Получаем сгенерированный код подтверждения и дату его протухания
+        const {confirmationCode, expirationDate} = confirmationService.generateConfirmationCode();
 
         // Обновление данных пользователя с новым кодом подтверждения
         user.emailConfirmation.confirmationCode = confirmationCode;
@@ -187,6 +196,7 @@ export const authService = {
                 emailExamples.registrationEmail
             )
             .catch(er => console.error('error in send email:', er));
+
         return {
             status: ResultStatus.Success,
             data: user,

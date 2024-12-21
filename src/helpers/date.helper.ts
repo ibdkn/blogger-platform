@@ -1,6 +1,6 @@
 export function isExpirationDatePassed(expirationDate: string) {
-    const currentDate = new Date();
-    const expDate = new Date(expirationDate);
+    const currentDate: Date = new Date();
+    const expDate: Date = new Date(expirationDate);
 
     return currentDate > expDate;
 }

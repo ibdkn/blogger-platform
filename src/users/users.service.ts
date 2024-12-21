@@ -2,10 +2,9 @@ import {usersRepository} from "./users.repository";
 import {DeleteResult, WithId} from "mongodb";
 import {AppError} from "../common/types/error.types";
 import {CreateUserInputDto} from "./types/create.user.input.dto";
-import {HttpStatuses} from "../common/types/httpStatuses";
 import {ExtensionType} from "../common/result/result.type";
 import {bcryptService} from "../common/adapters/bcrypt.service";
-import {UserDBType, UserDBTypeWithConfirm} from "./types/user.db.type";
+import {UserDBType} from "./types/user.db.type";
 import {ResultStatus} from "../common/result/resultCode";
 
 export const usersService = {
@@ -34,7 +33,7 @@ export const usersService = {
 
         const passwordHash: string = await bcryptService.generateHash(password);
 
-        const newUser: UserDBTypeWithConfirm = {
+        const newUser: UserDBType = {
             login,
             passwordHash,
             email,

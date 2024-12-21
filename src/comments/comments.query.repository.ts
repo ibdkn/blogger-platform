@@ -1,6 +1,5 @@
 import {commentsCollection, postsCollection, usersCollection} from "../db/db";
 import {ObjectId, WithId} from "mongodb";
-import {UserType} from "../users/users.type";
 import {CommentType, CommentViewType} from "./types/commment.type";
 import {AppError} from "../common/types/error.types";
 import {ResultStatus} from "../common/result/resultCode";
