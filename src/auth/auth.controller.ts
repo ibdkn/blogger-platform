@@ -1,6 +1,6 @@
 import {Response} from "express";
 import {authService} from "./auth.service";
-import {AppError} from "../common/types/error.types";
+import {AppError, transformErrors} from "../common/types/error.types";
 import {usersQueryRepository} from "../users/users.query.repository";
 import {RequestWithBody, RequestWithUserId} from "../common/types/requests";
 import {IdType} from "../common/types/id";
@@ -10,8 +10,6 @@ import {Result} from "../common/result/result.type";
 import {AccessTokenType} from "./types/auth.token.type";
 import {resultCodeToHttpException} from "../common/result/resultCodeToHttpException";
 import {ResultStatus} from "../common/result/resultCode";
-import {HttpStatuses} from "../common/types/httpStatuses";
-import {req} from "../../__tests__/test-helpers";
 
 export const authController = {
     async login(req: RequestWithBody<LoginInputDto>, res: Response): Promise<void> {
@@ -56,12 +54,15 @@ export const authController = {
             const result = await authService.registerUser(login, password, email);
             if (result.status === ResultStatus.Created) {
                 res.status(resultCodeToHttpException(ResultStatus.NoContent)).send();
+                return;
             } else {
                 res.status(resultCodeToHttpException(ResultStatus.InternalServerError)).send();
+                return;
             }
         } catch (e) {
             if (e instanceof AppError) {
-                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
+                const transformedErrors = transformErrors(e.extensions);
+                res.status(resultCodeToHttpException(e.status)).send({ errorsMessages: transformedErrors });
             } else {
                 console.error('Error occurred while fetching posts:', e);
                 res.status(resultCodeToHttpException(ResultStatus.InternalServerError))
@@ -71,22 +72,24 @@ export const authController = {
     },
     async registrationConfirmation(req, res): Promise<void> {
         try {
-            const { code } = req.query;
+            const { code } = req.body;
 
             const isUuid = new RegExp(
                 /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
             ).test(code);
 
+
             if (!code || typeof code !== 'string' || !isUuid) {
-                res.status(resultCodeToHttpException(ResultStatus.BadRequest)).send('Invalid confirmation code');
+                res.status(resultCodeToHttpException(ResultStatus.BadRequest)).send({ errorsMessages: transformErrors([{field: 'code', message: 'Invalid code'}]) });
                 return;
             }
 
             await authService.registrationConfirmation(code);
-            res.status(resultCodeToHttpException(ResultStatus.Success)).send('Email confirmed successfully');
+            res.status(resultCodeToHttpException(ResultStatus.NoContent)).send();
         } catch (e) {
             if (e instanceof AppError) {
-                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
+                const transformedErrors = transformErrors(e.extensions);
+                res.status(resultCodeToHttpException(e.status)).send({ errorsMessages: transformedErrors });
             } else {
                 console.error('Error occurred while fetching posts:', e);
                 res.status(resultCodeToHttpException(ResultStatus.InternalServerError))
@@ -94,15 +97,16 @@ export const authController = {
             }
         }
     },
-    async registrationEmailResending(req, res): Promise<void> {
+    async registrationEmailResending(req: Request, res: Response): Promise<void> {
         try {
             const { email } = req.body;
 
             await authService.registrationEmailResending(email);
-            res.status(resultCodeToHttpException(ResultStatus.Created)).send();
+            res.status(resultCodeToHttpException(ResultStatus.NoContent)).send();
         } catch (e) {
             if (e instanceof AppError) {
-                res.status(resultCodeToHttpException(e.status)).send(e.extensions);
+                const transformedErrors = transformErrors(e.extensions);
+                res.status(resultCodeToHttpException(e.status)).send({ errorsMessages: transformedErrors });
             } else {
                 console.error('Error occurred while fetching posts:', e);
                 res.status(resultCodeToHttpException(ResultStatus.InternalServerError))

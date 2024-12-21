@@ -22,3 +22,10 @@ export class AppError extends Error {
         this.name = 'AppError';
     }
 }
+
+export function transformErrors(errors: { field: string; message: string }[]): ValidationErrorType[] {
+    return errors.map(error => ({
+        message: error.message,
+        field: error.field
+    }));
+}

@@ -4,7 +4,7 @@ import {AppError} from "../common/types/error.types";
 import {ResultStatus} from "../common/result/resultCode";
 import {bcryptService} from "../common/adapters/bcrypt.service";
 import {jwtService} from "../common/adapters/jwt.service";
-import {Result} from "../common/result/result.type";
+import {ExtensionType, Result} from "../common/result/result.type";
 import {AccessTokenType} from "./types/auth.token.type";
 import {UserDBType, UserDBTypeWithConfirm} from "../users/types/user.db.type";
 import {nodemailerService} from "../common/adapters/nodemailer.service";
@@ -67,13 +67,22 @@ export const authService = {
         pass: string,
         email: string
     ): Promise<Result<UserDBType | null>> {
-        const user = await usersRepository.doesExistByLoginOrEmail(login, email);
+        const existingUser = await usersRepository.doesExistByLoginOrEmail(login, email);
 
-        if (user) {
+        if (existingUser) {
+            const errorsMessages: ExtensionType[] = [];
+
+            if (existingUser.login === login) {
+                errorsMessages.push({ field: 'login', message: 'Login already exists' });
+            }
+            if (existingUser.email === email) {
+                errorsMessages.push({ field: 'email', message: 'Email already exists' });
+            }
+
             throw new AppError(
                 ResultStatus.BadRequest,
                 'Bad Request',
-                [{ field: 'loginOrEmail', message: 'Already Registered' }],
+                errorsMessages,
                 null
             );
         }
@@ -115,7 +124,7 @@ export const authService = {
             throw new AppError(
                 ResultStatus.NotFound,
                 'Not Found',
-                [{ message: 'Invalid confirmation code'}],
+                [{ message: 'Invalid confirmation code', field: 'code'}],
                 null
             );
         }
@@ -124,7 +133,7 @@ export const authService = {
             throw new AppError(
                 ResultStatus.BadRequest,
                 'Bad Request',
-                [{ message: 'Email already confirmed'}],
+                [{ message: 'Email already confirmed', field: 'code'}],
                 null
             );
         }
@@ -146,9 +155,9 @@ export const authService = {
 
         if (!user) {
             throw new AppError(
-                ResultStatus.NotFound,
-                'Not Found',
-                [{ message: 'User not found'}],
+                ResultStatus.BadRequest,
+                'Bad Request',
+                [{ message: 'User not found', field: 'email'}],
                 null
             );
         }
@@ -156,11 +165,20 @@ export const authService = {
         if (user.emailConfirmation.isConfirmed) {
             throw new AppError(
                 ResultStatus.BadRequest,
-                'BadRequest',
-                [{ message: 'Email is already confirmed'}],
+                'Bad Request',
+                [{ message: 'Email is already confirmed', field: "email"}],
                 null
             );
         }
+
+        const confirmationCode = randomUUID();
+        const expirationDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours expiration
+
+        // Обновление данных пользователя с новым кодом подтверждения
+        user.emailConfirmation.confirmationCode = confirmationCode;
+        user.emailConfirmation.expirationDate = expirationDate;
+
+        await usersRepository.update(user);
 
         nodemailerService
             .sendEmail(

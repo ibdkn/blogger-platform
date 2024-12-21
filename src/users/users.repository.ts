@@ -6,9 +6,8 @@ export const usersRepository = {
     async doesExistById(id: string): Promise<WithId<UserDBType> | null> {
         return await usersCollection.findOne({_id: new ObjectId(id)});
     },
-    async doesExistByLoginOrEmail(login: string, email: string): Promise<boolean> {
-        const user: UserDBType | null = await usersCollection.findOne({$or: [{email}, {login}]});
-        return !!user
+    async doesExistByLoginOrEmail(login: string, email: string) {
+        return await usersCollection.findOne({$or: [{email}, {login}]});
     },
     async create(user: UserDBType): Promise<string> {
         const newUser: InsertOneResult<UserDBType> = await usersCollection.insertOne(user);

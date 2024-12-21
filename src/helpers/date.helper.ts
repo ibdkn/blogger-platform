@@ -1,4 +1,4 @@
-export function isExpirationDatePassed(expirationDate) {
+export function isExpirationDatePassed(expirationDate: string) {
     const currentDate = new Date();
     const expDate = new Date(expirationDate);
 

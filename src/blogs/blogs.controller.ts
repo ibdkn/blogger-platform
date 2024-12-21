@@ -61,7 +61,7 @@ export const blogsController = {
     async createBlog(req: Request, res: Response): Promise<void> {
         try {
             const newBlogId: string = await blogsService.create(req.body);
-            const newBlog: BlogType = await  blogsQueryRepository.findById(newBlogId);
+            const newBlog: BlogType = await blogsQueryRepository.findById(newBlogId);
 
             res.status(resultCodeToHttpException(ResultStatus.Created)).send(newBlog);
         } catch (e: any) {
